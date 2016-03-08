@@ -1,0 +1,6 @@
+hash: 0965a16d1d050dcdf45a42587266f3de6ff936f5849b6d4ac0ae865bc50ab707
+updated: 2016-03-08T17:24:37.939302016+05:30
+imports:
+- name: github.com/zenazn/goji
+  version: e9a3f0275121c2439e2bd4b5dc6a9eb3fbe88451
+devImports: []
