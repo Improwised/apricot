@@ -1,3 +1,6 @@
 package: github.com/improwised/apricot
 import:
 - package: github.com/zenazn/goji
+- package: github.com/Masterminds/cookoo
+- package: github.com/lib/pq
+- package: github.com/DavidHuie/gomigrate
