@@ -1,5 +1,5 @@
 create table questions (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   description text,
   deleted timestamp,
   sequence int,

@@ -1,5 +1,5 @@
 create table challenge_answers (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   sessionId int references sessions(id),
   answer text,
   attempts int,

@@ -1,5 +1,5 @@
 create table candidates (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   email text,
   name text,
   contact text,

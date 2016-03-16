@@ -1,5 +1,5 @@
 create table sessions (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   hash text,
   candidateId int references candidates(id),
   challengeId int references challenges(id),

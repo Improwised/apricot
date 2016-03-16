@@ -1,5 +1,5 @@
 create table challenge_cases (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   challengeId int references challenges(id),
   imput text,
   output text,

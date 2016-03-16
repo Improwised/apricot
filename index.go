@@ -45,11 +45,17 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
   if email == "" {
     t, _ := template.ParseFiles("./views/index.html")
     t.Execute(w, t)
-  }
-  stmt, _ := db.Prepare("SELECT * FROM candidates WHERE email = ($1)")
-  rows, _ := stmt.Query(email)
-  if rows.Next() != false {
-    fmt.Println("Email already registered")
+  } else {
+    w.Write([]byte("A Unique link has been sent to your registered Email id"))
+    stmt, _ := db.Prepare("SELECT id FROM candidates WHERE email = ($1)")
+    rows, _ := stmt.Query(email)
+
+    if rows.Next() != false {
+      fmt.Println("Email already registered")
+    } else {
+      stmt1, _ := db.Prepare("INSERT INTO candidates (email) VALUES($1)")
+      stmt1.Exec(email)
+    }
   }
 }
 
@@ -58,6 +64,7 @@ func main() {
   defer db.Close()
   goji.Handle("/index", indexHandler)
   http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
+  http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
   http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
   http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
   goji.Serve()

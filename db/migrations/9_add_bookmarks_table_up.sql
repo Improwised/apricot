@@ -1,5 +1,5 @@
 create table bookmarks (
-  id serial primary key  NOT null,
+  id SERIAL PRIMARY KEY NOT NULL,
   sessionId int references sessions(id),
   name text,
   created timestamp,

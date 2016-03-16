@@ -1,5 +1,5 @@
 create table questions_answers (
-  id serial primary key NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
   candidateId int references candidates(id),
   questionsId int references questions(id),
   answer text,
