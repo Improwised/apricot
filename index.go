@@ -59,6 +59,43 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
   }
 }
 
+func dataUpdate(w http.ResponseWriter, r *http.Request) {
+  db = setupDB()
+  t, _ := template.ParseFiles("./views/information.html")
+  t.Execute(w, t)
+  data := r.URL.Query().Get("data")
+  id := r.URL.Query().Get("id")
+  var table="questions_answers";
+
+  if id == "email" || id == "name" || id == "contact" || id == "degree" || id == "college" || id == "yearOfCompletion"{
+    table = "candidates"
+  }
+
+  var buffer bytes.Buffer
+
+  buffer.WriteString("UPDATE ")
+  buffer.WriteString(table)
+
+  if(table == "questions_answers"){
+
+    buffer.WriteString(" set answer=")
+    buffer.WriteString("'" + data + "'")
+    buffer.WriteString(" where questionsid='1'")
+    //  buffer.WriteString("'" + id + "'")
+    buffer.WriteString(" AND")
+    buffer.WriteString(" candidateid=(select id from candidates where email= 'ashvin1@improwised.com')")
+  }
+  if(table == "candidates"){
+    buffer.WriteString(" SET ")
+    buffer.WriteString(id)
+    buffer.WriteString("=")
+    buffer.WriteString("'" + data + "'")
+    buffer.WriteString(" where id='1'")
+  }
+     db.Query(buffer.String())
+
+ }
+
 func main() {
   db = setupDB()
   defer db.Close()

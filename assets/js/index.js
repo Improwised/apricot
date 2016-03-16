@@ -16,4 +16,20 @@ function checkform(pform1){
   return true
 }
 
+//data retrive from html form
+function autoSave(data,id) {
+  var str = "";
+  str += data ;
+  retriveData(str,id);
+}
 
+function retriveData(str,id) {
+  if (str==""){
+    return;
+  }
+  if (window.XMLHttpRequest) {
+    xmlhttp=new XMLHttpRequest();
+  }
+  xmlhttp.open("GET","information?data="+str+ "&id="+ id,true);
+  xmlhttp.send();
+}
