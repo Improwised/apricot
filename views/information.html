@@ -6,6 +6,7 @@
     <title>Registration form</title>
     <link href="../assets/fonts/fonts.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="../assets/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+    <script type="text/javascript" src="../assets/js/index.js"></script>
     <style type="text/css" media="screen">
       #body-container {
         display: block;
@@ -37,52 +38,52 @@
                       <br>
                       <table style="width:60%">
                         <tr>
-                          <td width="40%" height="16">Name</td>
+                          <td width="40%" height="16%">Name</td>
                           <td width="3%">:</td>
                           <td width="57%" height="16">
-                            <input type="text" name="text_name" style="width: 300px; height: 30px;"value="">
+                            <input type="text" name="text_name" id="name" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
                           </td>
                         </tr>
                         <tr>
-                          <td width="40%" height="16">Contact</td>
+                          <td width="40%" height="16%">Contact</td>
                           <td width="3%">:</td>
-                          <td>
-                            <input type="text" name="text_contact" style="width: 300px; height: 30px;"value="">
+                          <td width="57%" height="16">
+                            <input type="text" name="text_contact" id="contact" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" maxlength="10" pattern="[0-9]{10}" title="Enter your mobile number" required>
                           </td>
                         </tr>
                         <tr>
                           <td width="40%" height="16">Degree</td>
                           <td width="3%">:</td>
                           <td>
-                            <input type="text" name="text_degree" style="width: 300px; height: 30px;"value="">
+                            <input type="text" name="text_degree" id="degree" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
                           </td>
                         </tr>
                         <tr>
                           <td width="40%" height="16">College</td>
                           <td width="3%">:</td>
                           <td>
-                            <input type="text" name="text_college" style="width: 300px; height: 30px;"value="">
+                            <input type="text" name="text_college" id="college" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
                           </td>
                         </tr>
                         <tr>
                           <td width="40%" height="16">Year Of Completion</td>
                           <td width="3%">:</td>
                           <td>
-                            <input type="text" name="text_yearOfCompletion" style="width: 300px; height: 30px;"value="">
+                            <input type="text" name="text_yearOfCompletion" id="yearOfCompletion" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
                           </td>
                         </tr>                                          
                       </table>
                       <br>
-                      <table width="50%">
+                      <table style="width:60%">
                         <tr>
-                          <td width="40%" height="16" text-decoration: underline>Questions</td>
-                        </tr>                         
+                          <td width="40%" height="16">Questions</td>
+                        </tr>
                         <tr>
                           <td>1 - </td>
                         </tr>
                         <tr>
                           <td>
-                            <textarea name="message1" rows="4" cols="60" placeholder="Write your answer here."></textarea>
+                            <textarea name="message1" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
                           </td>
                         </tr>
                         <tr>
@@ -90,7 +91,7 @@
                         </tr>
                         <tr>
                           <td>
-                            <textarea name="message2" rows="4" cols="60" placeholder="Write your answer here."></textarea>
+                            <textarea name="message2" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
                           </td>
                         </tr>
                         <tr>
@@ -98,7 +99,7 @@
                         </tr>
                         <tr>
                           <td>
-                            <textarea name="message3" rows="4" cols="60" placeholder="Write your answer here."></textarea>
+                            <textarea name="message3" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
                           </td>
                         </tr>
                         <tr>
@@ -106,7 +107,7 @@
                         </tr>
                         <tr>
                           <td>
-                            <textarea name="message4" rows="4" cols="60" placeholder="Write your answer here."></textarea>
+                            <textarea name="message4" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
                           </td>
                         </tr>
                         <tr>

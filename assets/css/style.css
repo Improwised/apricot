@@ -71,7 +71,7 @@ h3 {
 #welcome h1,
 #services h1,
 #services h2,
-#contact h2,
+/*#contact h2,*/
 #jobs h2,
 #jobs h3 {
   text-align: center;
@@ -110,9 +110,9 @@ h3 {
   background-color: #e4a693;
 }
 
-#contact {
+/*#contact {
   margin-bottom: 100px;
-}
+}*/
 
 #address,
 #address p,
@@ -158,7 +158,7 @@ h3 {
 /* Custom Style Ends */
 body{
   background: url('../img/bg_main_app.jpg');
-
+  
 }
 body, p, li, td{
   font-family:'pt sans', "Lucida Grande",verdana,arial,helvetica,sans-serif;
@@ -229,14 +229,15 @@ label, input, button, select, textarea{
   padding-left: 20px;
 }
 
-table tr td{
-  font-size:12px;
+table tr {
+  /*font-weight: bold;*/
+  font-size: 15px;
 }
 
-table th{
-  font-size: 13px;
+/*table th{
+  font-size: 15px;
 }
-
+*/
 h3{
   color:#666;
   padding-top:20px;
@@ -260,21 +261,24 @@ td.avatar{
   width: 55px;
 }
 
-td.party{
+td{
   padding-left: 12px;
-  height: 55px;
+  height: 45px;
   text-align:left;
-  vertical-align:top;
+  vertical-align:center;
+  padding: 6px;
 }
 
-table.index td.party h6 a {
+table td h6 a {
   color: #888;
 }
-table.index a {
+table {
   text-decoration: none;
 }
 input{
-  font-size:14px;
+  font-size:17px;
+
+
 }
 table.index td.party h3 {
   color: black;
@@ -316,7 +320,9 @@ h1{
   line-height:20px;
 }
 legend{
-  font-size:24px;
+  font-size:27px;
+  font-weight:bold;
+  font-family: 'pt sans', "Lucida Grande",verdana,arial,helvetica,sans-serif;
 }
 
 a.highlight, span.highlight{
@@ -412,6 +418,7 @@ span.green{
   line-height: 1;
   color: whiteSmoke;
 }
+
 .navbar .nav .active > a, .navbar .nav .active > a:hover{
   background-color: rgba(0, 0, 0, 0.199219) !important;
 }
@@ -429,7 +436,6 @@ body,p,td {
   font-family: 'pt sans',arial,helvetica,sans-serif !important;
 }
 
-
 p,li,span {
   font-size: 18px;
   line-height: 1.6;
@@ -437,7 +443,7 @@ p,li,span {
 }
 
 textarea{
-  font-size:14px;
+  font-size:17px;
 }
 
 strong{
