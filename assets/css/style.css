@@ -158,11 +158,11 @@ h3 {
 /* Custom Style Ends */
 body{
   background: url('../img/bg_main_app.jpg');
-  
+
 }
 body, p, li, td{
   font-family:'pt sans', "Lucida Grande",verdana,arial,helvetica,sans-serif;
-  font-size:20px;
+  font-size:18px;
 }
 
 img { max-width: 100%; }

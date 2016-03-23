@@ -13,7 +13,7 @@
       }
     </style>
   </head>
-  <body>
+  <body onload="emailHidden()">
     <div id="loading-for-data" align="center" style="display: none;">
       <img src="../assets/img/loading.gif">
     </div>
@@ -23,7 +23,6 @@
           <div class="span1">
               &nbsp;
           </div>
-
           <div class="span10">
             <div style="overflow:hidden; margin-left:180px;">
               <img id="company-logo" style="float:left; height:45px; width=90px; " src="../assets/img/logo.png">
@@ -32,95 +31,58 @@
             <div id="main-body" style="margin-top:8px; width:80%; margin-left:180px;">
               <div style="padding:20px; min-height:50px;">
                 <div id="pre-submit">
-                  <form action="action_page.php">
-                    <fieldset>
-                      <legend>Personal information:</legend>
-                      <br>
-                      <table style="width:60%">
-                        <tr>
-                          <td width="40%" height="16%">Name</td>
-                          <td width="3%">:</td>
-                          <td width="57%" height="16">
-                            <input type="text" name="text_name" id="name" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="40%" height="16%">Contact</td>
-                          <td width="3%">:</td>
-                          <td width="57%" height="16">
-                            <input type="text" name="text_contact" id="contact" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" maxlength="10" pattern="[0-9]{10}" title="Enter your mobile number" required>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="40%" height="16">Degree</td>
-                          <td width="3%">:</td>
-                          <td>
-                            <input type="text" name="text_degree" id="degree" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="40%" height="16">College</td>
-                          <td width="3%">:</td>
-                          <td>
-                            <input type="text" name="text_college" id="college" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td width="40%" height="16">Year Of Completion</td>
-                          <td width="3%">:</td>
-                          <td>
-                            <input type="text" name="text_yearOfCompletion" id="yearOfCompletion" onkeyup="autoSave(this.value,this.id)" style="width: 300px; height: 30px;"value="" required>
-                          </td>
-                        </tr>                                          
-                      </table>
-                      <br>
-                      <table style="width:60%">
-                        <tr>
-                          <td width="40%" height="16">Questions</td>
-                        </tr>
-                        <tr>
-                          <td>1 - </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <textarea name="message1" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>2 - </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <textarea name="message2" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>3 - </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <textarea name="message3" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>4 - </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <textarea name="message4" id="id" onkeyup="autoSave(this.value,this.id)" rows="4" cols="50" placeholder="Write your answer here."></textarea>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>
-                            <center>
-                              <input type="submit" value="Next" class="btn btn-success"
-style="display: inline-block; background-color: #79b022; color : #000000">
-                            </center>
-                          </td>
-                        </tr>
-                      </table>
-                    </fieldset>
-                  </form>
+                    <form class="form-horizontal" role="form" method="POST" action="./information">
+                      <input type="hidden" name="email" id="email">
+                      <fieldset>
+                      <legend>Personal information:</legend><br>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="name">Name:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="name" id="name" style="width: 250px; height: 30px;" value="" required placeholder="Enter name">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="contact">Contact:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="contact" id="contact" style="width: 250px; height: 30px;" value="" maxlength="10" pattern="[0-9]{10}" title="Enter your mobile number" required placeholder="Enter contact">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="degree">Degree:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="degree" id="degree" style="width: 250px; height: 30px;" value="" required placeholder="Enter degree">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="college">College:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="college" id="college" style="width: 250px; height: 30px;" value="" required placeholder="Enter college">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="yearofpassing">Year Of Passing:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="yearOfCompletion" id="yearOfCompletion" style="width: 250px; height: 30px;" value="" required placeholder="Enter year of passing">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="yearofpassing">Questions:</label>
+                          <div class="col-sm-10">
+                          {{with .}}
+                            {{range .}}
+                              {{.Questions}}
+                              <textarea name="message" id="{{.Id}}" class="form-control" rows="4" cols="50" placeholder="Write your answer here." value = "{{.Ans}}">{{.Ans}}</textarea>
+                            {{end}}
+                          {{end}}
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-default">Submit</button>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </form>
                 </div>
               </div>
             </div>

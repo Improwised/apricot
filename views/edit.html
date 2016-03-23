@@ -7,13 +7,16 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin - Bootstrap Admin Template</title>
+    <title>Improwised Admin</title>
+
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
+    <link href="../assets/css/plugins/morris.css" rel="stylesheet">
     <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
 
-  <body>
+  <body onload="getId()">
     <div id="wrapper">
       <!-- Navigation -->
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
@@ -47,7 +50,7 @@
               </h1>
               <ol class="breadcrumb">
                 <li class="active">
-                  <i class="fa fa-dashboard"></i> Questions
+                  <i class="fa fa-dashboard"></i> Edit Questions
                 </li>
               </ol>
             </div>
@@ -57,40 +60,33 @@
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
                 <div class="card-block">
-                  <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
-                      <thead>
-                        <tr>
-                            <th style="width:2px;">Id</th>
-                            <th style="width:100px;">Name</th>
-                            <th style="width:100px;">Email</th>
-                            <th style="width:2px;">Contact</th>
-                            <th style="width:2px;">Degree</th>
-                            <th style="width:2px;">College</th>
-                            <th style="width:2px;">Year Of Completion</th>
-                            <th style="width:2px;">Created</th>
-                            <th style="width:2px;">Modified</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {{with .}}
-                        {{range .}}
-                        <tr>
-                          <td>{{.Id}}</td>
-                          <td>{{.Name}}</td>
-                          <td>{{.Email}}</td>
-                          <td>{{.Contact}}</td>
-                          <td>{{.Degree}}</td>
-                          <td>{{.College}}</td>
-                          <td>{{.YearOfCompletion}}</td>
-                          <td>{{.Created}}</td>
-                          <td>{{.Modified}}</td>
-                        </tr>
-                        {{end}}
-                        {{end}}
-                      </tbody>
-                    </table>
-                  </div>
+                  <form class="form-horizontal" role="form" method="POST" action="./questions">
+                    <fieldset>
+                      <legend>Questions:</legend><br>
+                        <div class="form-group">
+                          <div class="col-sm-10">
+                            <input type="hidden" class="form-control" name="qId" id="qId" >
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="description">Description:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="description" id="description" onkeyup="autoSave(this.value,this.id)" style="width: 900px; height: 30px;"value="" required placeholder="Enter description">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <label class="control-label col-sm-2" for="sequence">Sequence:</label>
+                          <div class="col-sm-10">
+                            <input type="text" class="form-control" name="sequence" id="sequence" onkeyup="autoSave(this.value,this.id)" style="width: 130px; height: 30px;"value="" required placeholder="Enter sequence">
+                          </div>
+                        </div>
+                        <div class="form-group">
+                          <div class="col-sm-offset-2 col-sm-10">
+                            <button type="submit" class="btn btn-default" value = "submit">Submit</button>
+                          </div>
+                        </div>
+                    </fieldset>
+                  </form>
                 </div>
               </div>
             </div>
