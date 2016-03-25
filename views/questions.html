@@ -15,6 +15,7 @@
     <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
 
   <body>
@@ -35,7 +36,7 @@
               <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
             </li>
             <li class="list-group-item">
-              <a href="Questions.html"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
+              <a href="questions"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
             </li>
           </ul>
         </div>
@@ -122,8 +123,8 @@
                         <tr>
                           <td>{{.Id}}</td>
                           <td>{{.Description}}</td>
-                          <td><a href="/edit?id={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
-                          <td><a href="/edit?id={{.Id}}" id = "{{.Id}}"><img src="../assets/img/remove.png"></a></td>
+                          <td><a href="/edit?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
+                          <td><img alt = "" src="../assets/img/false.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}"></td>
                         </tr>
                         {{end}}
                         {{end}}

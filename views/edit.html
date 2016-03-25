@@ -16,7 +16,7 @@
     <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
 
-  <body onload="getId()">
+  <body onload="getQid()">
     <div id="wrapper">
       <!-- Navigation -->
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
@@ -65,24 +65,26 @@
                       <legend>Questions:</legend><br>
                         <div class="form-group">
                           <div class="col-sm-10">
-                            <input type="hidden" class="form-control" name="qId" id="qId" >
+                            <input type="hidden" class="form-control" name="qId" id="qId" value = "">
                           </div>
                         </div>
+                        {{range .}}
                         <div class="form-group">
                           <label class="control-label col-sm-2" for="description">Description:</label>
                           <div class="col-sm-10">
-                            <input type="text" class="form-control" name="description" id="description" onkeyup="autoSave(this.value,this.id)" style="width: 900px; height: 30px;"value="" required placeholder="Enter description">
+                            <input type="text" class="form-control" name="description" id="description" onkeyup="autoSave(this.value,this.id)" style="width: 900px; height: 30px;"value="{{.Description}}" required placeholder="Enter description">
                           </div>
                         </div>
                         <div class="form-group">
                           <label class="control-label col-sm-2" for="sequence">Sequence:</label>
                           <div class="col-sm-10">
-                            <input type="text" class="form-control" name="sequence" id="sequence" onkeyup="autoSave(this.value,this.id)" style="width: 130px; height: 30px;"value="" required placeholder="Enter sequence">
+                            <input type="text" class="form-control" name="sequence" id="sequence" onkeyup="autoSave(this.value,this.id)" style="width: 130px; height: 30px;"value="{{.Sequence}}" required placeholder="Enter sequence">
                           </div>
                         </div>
+                        {{end}}
                         <div class="form-group">
                           <div class="col-sm-offset-2 col-sm-10">
-                            <button type="submit" class="btn btn-default" value = "submit">Submit</button>
+                            <input type="submit" class="btn btn-default" name = "submit" value = "submit">
                           </div>
                         </div>
                     </fieldset>

@@ -68,5 +68,40 @@ function emailHidden() {
  }
 
  document.getElementById("email").value = myJson[hash[0]];
+}
 
+function getQid() {
+	url = window.location.search.substring(1);
+	var hash;
+	var myJson = {};
+	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+
+	for (var i = 0; i < hashes.length; i++) {
+		hash = hashes[i].split('=');
+		myJson[hash[0]] = hash[1];
+ }
+
+ document.getElementById("qId").value = myJson[hash[0]];
+}
+
+var flag = 1;
+function deleteQuestion(qId, element) {
+	if (window.XMLHttpRequest) {
+		xmlhttp=new XMLHttpRequest();
+	}
+	if (flag == 1) {
+		status = "no"
+		element.src ="../assets/img/true.png";
+		xmlhttp.open("GET", "/delete?qid=" + qId+ "&deleted=" + status, true);
+
+		flag = 0;
+	}
+  else if (flag == 0) {
+		status = "yes"
+		element.src="../assets/img/false.png";
+		xmlhttp.open("GET", "/delete?qid=" + qId+ "&deleted=" + status, true);
+		flag = 1;
+
+	}
+	xmlhttp.send();
 }
