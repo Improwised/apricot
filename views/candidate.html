@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin - Bootstrap Admin Template</title>
+    <title>Improwised Admin</title>
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
     <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
@@ -28,10 +28,10 @@
         <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
           <ul class="nav navbar-nav side-nav list-group">
             <li class="list-group-item">
-              <a href="index.html"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+              <a href="/questions"><i class="fa fa-fw fa-dashboard"></i> Questions</a>
             </li>
             <li class="list-group-item">
-              <a href="Questions.html"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
+              <a href="/candidates"><i class="fa fa-fw fa-bar-chart-o"></i> Candidates</a>
             </li>
           </ul>
         </div>
@@ -47,7 +47,7 @@
               </h1>
               <ol class="breadcrumb">
                 <li class="active">
-                  <i class="fa fa-dashboard"></i> Questions
+                  <i class="fa fa-dashboard"></i> Candidates
                 </li>
               </ol>
             </div>
@@ -61,15 +61,15 @@
                     <table class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
-                            <th style="width:2px;">Id</th>
-                            <th style="width:100px;">Name</th>
-                            <th style="width:100px;">Email</th>
-                            <th style="width:2px;">Contact</th>
-                            <th style="width:2px;">Degree</th>
-                            <th style="width:2px;">College</th>
-                            <th style="width:2px;">Year Of Completion</th>
-                            <th style="width:2px;">Created</th>
-                            <th style="width:2px;">Modified</th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=id">Id</a></th>
+                            <th style="width:100px;"><a href="/candidates?fieldOfOrder=name">Name</a></th>
+                            <th style="width:100px;"><a href="/candidates?fieldOfOrder=email">Email</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=contact">Contact</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=degree">Degree</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=college">College</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=yearOfCompletion">Year Of Completion</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=created">Created</a></th>
+                            <th style="width:2px;"><a href="/candidates?fieldOfOrder=modified">Modified</a></th>
                         </tr>
                       </thead>
                       <tbody>

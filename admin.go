@@ -10,6 +10,7 @@ import (
   "html/template"
   "encoding/json"
   "os"
+  "time"
 )
 
 type Configuration struct {
@@ -63,12 +64,12 @@ func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
     stmt2, _ := db.Prepare("insert into questions (description, sequence, created) values($1, $2, NOW())")
     stmt2.Query(description, sequence)
   }
-  stmt3, _ := db.Prepare("select id, description from questions order by id")
+  stmt3, _ := db.Prepare("select id, description, sequence from questions order by id")
   rows3, _ := stmt3.Query()
   questions := []questionsInformation{}
   q := questionsInformation{}
   for rows3.Next() {
-    err := rows3.Scan(&q.Id, &q.Description)
+    err := rows3.Scan(&q.Id, &q.Description, &q.Sequence)
     questions = append(questions, q)
     checkErr(err)
   }
@@ -94,11 +95,46 @@ func editHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 }
 
+type GeneralInfo struct {
+  Id string
+  Name string
+  Contact string
+  Degree string
+  College string
+  YearOfCompletion string
+  Email string
+  Created time.Time
+  Modified time.Time
+}
+
+func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+  sortOrder := r.URL.Query().Get("sortBy")
+  fmt.Println(sortOrder)
+  fieldOfOrder := r.URL.Query().Get("fieldOfOrder")
+
+  stmt1 := fmt.Sprintf("select id, name, email, contact, degree, college, yearOfCompletion, created, modified from candidates order by %s", fieldOfOrder)
+  rows1, _ := db.Query(stmt1)
+
+  User := []GeneralInfo{}
+  user := GeneralInfo{}
+
+  for rows1.Next() {
+    rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion ,&user.Created, &user.Modified)
+    User = append(User, user)
+    fmt.Println(user)
+  }
+
+  t, _ := template.ParseFiles("./views/candidate.html")
+  t.Execute(w, User)
+}
+
 func main() {
   db = setupDB()
   defer db.Close()
   goji.Handle("/questions", questionsHandler)
   goji.Handle("/edit", editHandler)
+  goji.Handle("/candidates", candidateHandler)
   http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
   http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
   http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
