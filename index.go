@@ -49,6 +49,7 @@ func checkErr(err error) {
 }
 
 type generalInfo struct {
+type GeneralInfo struct {
 	Id string
 	Name string
 	Contact string
@@ -102,6 +103,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			sess := sesssionHash.Id()
 			fmt.Println(sess)
 			stmt1, err := db.Prepare("INSERT INTO candidates (email) VALUES($1)")
+			stmt1, err := db.Prepare("INSERT INTO candidates (email,created) VALUES($1,NOW())")
 			stmt1.Exec(email)
 			checkErr(err)
 			stmt2, err := db.Prepare("select id from candidates where email = ($1)")
@@ -109,6 +111,8 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			rows2, err := stmt2.Query(email)
 			information := []generalInfo{}
 			info := generalInfo{}
+			information := []GeneralInfo{}
+			info := GeneralInfo{}
 			for rows2.Next() {
 				err := rows2.Scan(&info.Id)
 				information = append(information, info)
@@ -116,6 +120,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			}
 
 			stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer) values ($1, $2, $3)")
+			stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer, created) values ($1, $2, $3, NOW())")
 			rows4, _ := db.Query("select id from questions")
 			counter := 1
 			for rows4.Next() {
@@ -123,6 +128,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 				counter += 1
 			}
 			stmt4, _ := db.Prepare("INSERT INTO sessions (hash,candidateId) VALUES($1, $2)")
+			stmt4, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created) VALUES($1, $2, NOW())")
 			stmt4.Exec(hash,information[0].Id)
 
 		}
@@ -139,27 +145,40 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	 t, _ := template.ParseFiles("./views/index.html")
 		t.Execute(w, t)
 }
+	}
 }
 
 type getQuestions struct {
+type GetQuestions struct {
 	Questions string
 	Id string
 	Ans  string
 }
 
 type getAnswers struct {
+type GetAnswers struct {
 	Answer string
 	Qid string
 }
+
+type AllDetail struct {
+  GeneralInformation []GeneralInfo
+  GetAllQuestions []GetQuestions
+}
+
 var hash string
 func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	hash = r.URL.Query().Get("key")
 	processFormData(w, r)
 
+	allDetails := AllDetail{}
+
 	// get all questions
 	rows, _ := db.Query("select id, description from questions order by sequence")
 	questionsInfo := []getQuestions{}
 	qinfo := getQuestions{}
+	questionsInfo := []GetQuestions{}
+	qinfo := GetQuestions{}
 	for rows.Next() {
 		err := rows.Scan(&qinfo.Id, &qinfo.Questions)
 		questionsInfo = append(questionsInfo, qinfo)
@@ -170,6 +189,7 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	for rows2.Next() {
 		getanswer := getAnswers{}
+		getanswer := GetAnswers{}
 		err := rows2.Scan(&getanswer.Answer, &getanswer.Qid)
 		for index, element := range questionsInfo {
 			if(element.Id == getanswer.Qid) {
@@ -191,6 +211,25 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("./views/information.html")
 	t.Execute(w, questionsInfo)
 	dataUpdate(w,r, hash)
+
+	//get user detail
+	User := []GeneralInfo{}
+  user := GeneralInfo{}
+  stmt3, _ := db.Prepare("select id, name, contact, degree, college,yearOfCompletion from candidates where id = (select candidateId from sessions where hash = ($1))")
+  row3, _ := stmt3.Query(hash)
+  for row3.Next() {
+    row3.Scan(&user.Id, &user.Name, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion)
+    User = append(User, user)
+  }
+
+  t, _ := template.ParseFiles("./views/information.html")
+
+  allDetails.GeneralInformation = User
+  allDetails.GetAllQuestions = questionsInfo
+
+  t.Execute(w, allDetails)
+  dataUpdate(w, r, hash)
+
 }
 
 func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
@@ -210,6 +249,7 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
 		buffer.WriteString(" set answer=")
 		buffer.WriteString("'" + data + "'")
 		buffer.WriteString(" where questionsid="+ id)
+		buffer.WriteString(",modified=NOW() where questionsid="+ id)
 		//  buffer.WriteString("'" + id + "'")
 		buffer.WriteString(" AND")
 		buffer.WriteString(" candidateid=(select candidateId from sessions where hash=")
@@ -223,6 +263,7 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
 		buffer.WriteString("=")
 		buffer.WriteString("'" + data + "'")
 		buffer.WriteString(" where id=(select candidateId from sessions where hash =")
+		buffer.WriteString(",modified=NOW() where id=(select candidateId from sessions where hash =")
 		buffer.WriteString("'" + hash + "')")
 	}
 	db.Query(buffer.String())
