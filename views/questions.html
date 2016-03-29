@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>SB Admin - Bootstrap Admin Template</title>
+    <title>Improwised Admin</title>
 
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
@@ -24,10 +24,7 @@
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <button class="navbar-toggler hidden-sm-up pull-sm-right" type="button" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                &#9776;
-            </button>
-            <a class="navbar-brand" href="index.html">Improwised</a>
+          <a class="navbar-brand" href="index.html">Improwised</a>
         </div>
         <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
         <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
@@ -72,7 +69,7 @@
                        <h4 class="modal-title">Question</h4>
                       </div>
                       <div class="modal-body">
-                        <form class="form-horizontal" role="form" method="POST" action="./questions">
+                        <form class="form-horizontal" role="form" method="POST" action="./add">
                           <div class="form-group">
                             <label class="control-label col-sm-2" for="description">Description:</label>
                             <div class="col-sm-10">
@@ -113,21 +110,28 @@
                         <tr>
                             <th width="2%">Id</th>
                             <th>Questions</th>
+                            <th width="2%">Sequence</th>
                             <th width="2%">EDIT</th>
                             <th width="2%">REMOVE</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {{with .}}
-                        {{range .}}
+                       <!--  {{with .}} -->
+                        {{range .QuestionsInfo}}
                         <tr>
                           <td>{{.Id}}</td>
                           <td>{{.Description}}</td>
+                          <td>{{.Sequence}}</td>
                           <td><a href="/edit?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
-                          <td><img alt = "" src="../assets/img/false.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}"></td>
+                           <td>{{if eq .Flag 1}}
+                          <img src="../assets/img/true.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}">
+                          {{else}}
+                            <img src="../assets/img/false.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}">
+                          {{end}}
+                          </td>
                         </tr>
                         {{end}}
-                        {{end}}
+                       <!--  {{end}} -->
                       </tbody>
                     </table>
                   </div>
