@@ -19,6 +19,35 @@ export GO15VENDOREXPERIMENT=1
 ```
 $ glide install
 ```
+* Create Database
+```
+$ create database iims
+```
+* Database Migration
+```
+$ go run migration.go
+```
+
+## Client Side
+
+* Run Application
+```
+$ go run index.go
+```
+* Open
+```
+$ http://localhost:8000/index
+```
+
+## Admin Side
+
+* Run Application
+```
+$ go run admin.go
+```
+* Open
+```
+$ http://localhost:8000/candidates
 
 ## Structure
 
