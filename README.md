@@ -48,6 +48,7 @@ $ go run admin.go
 * Open
 ```
 $ http://localhost:8000/candidates
+```
 
 ## Structure
 
