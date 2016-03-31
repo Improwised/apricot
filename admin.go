@@ -11,6 +11,8 @@ import (
 	"encoding/json"
 	"os"
 	"time"
+	"bytes"
+	// "reflect"
 )
 
 type Configuration struct {
@@ -59,8 +61,9 @@ type getAllQuestionsInfo struct {
 // display questions in view
 func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllQuestionsInfo := getAllQuestionsInfo{}
-	stmt3, _ := db.Prepare("select id, description, deleted, sequence from questions order by id")
-	rows3, _ := stmt3.Query()
+	var buffer bytes.Buffer
+	buffer.WriteString("select id, description, deleted, sequence from questions order by sequence")
+	rows3, _ := db.Query(buffer.String())
 
 	questionsInfo := []questionsInformation{}
 	q := questionsInformation{}
@@ -75,13 +78,15 @@ func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		checkErr(err)
 	}
 
+
+
 	getAllQuestionsInfo.QuestionsInfo = questionsInfo
 	t, _ := template.ParseFiles("./views/questions.html")
 	t.Execute(w, getAllQuestionsInfo)
 }
 
 // perform edit functionality
-func editHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func editQuesionHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("qId") != "" {
 		description := r.FormValue("description")
 		sequence := r.FormValue("sequence")
@@ -100,13 +105,13 @@ func editHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			questions = append(questions, q)
 			checkErr(err)
 		}
-		t, _ := template.ParseFiles("./views/edit.html")
+		t, _ := template.ParseFiles("./views/editquestion.html")
 		t.Execute(w, questions)
 	}
 }
 
 //  delete questions functionality
-func deleteHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func deleteQuestionHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	qId := r.URL.Query().Get("qid")
 	status := r.URL.Query().Get("deleted")
 	if status == "no" {
@@ -119,12 +124,80 @@ func deleteHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 // add questions functionality
-func addHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func addQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	description := r.FormValue("description")
 	sequence := r.FormValue("sequence")
 	stmt2, _ := db.Prepare("insert into questions (description, sequence, created) values($1, $2, NOW())")
 	stmt2.Query(description, sequence)
 	http.Redirect(w, r, "questions", 301)
+}
+
+func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	getAllQuestionsInfo := getAllQuestionsInfo{}
+	var buffer bytes.Buffer
+	buffer.WriteString("select id, description, deleted from challenges order by id")
+	rows3, _ := db.Query(buffer.String())
+
+	questionsInfo := []questionsInformation{}
+	q := questionsInformation{}
+	for rows3.Next() {
+		err := rows3.Scan(&q.Id, &q.Description, &q.Deleted)
+		if q.Deleted != nil{
+			q.Flag = 1
+		} else if q.Deleted == nil{
+			q.Flag = 0
+		}
+		questionsInfo = append(questionsInfo, q)
+		checkErr(err)
+	}
+
+	getAllQuestionsInfo.QuestionsInfo = questionsInfo
+	t, _ := template.ParseFiles("./views/programmingtest.html")
+	t.Execute(w, getAllQuestionsInfo)
+}
+
+func deleteChanllengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	qId := r.URL.Query().Get("qid")
+	status := r.URL.Query().Get("deleted")
+	if status == "no" {
+		stmt1, _ := db.Prepare("update challenges set deleted = NOW() where id = ($1)")
+		stmt1.Query(qId)
+	} else if status == "yes" {
+		stmt1, _ := db.Prepare("update challenges set deleted = NULL where id = ($1)")
+		stmt1.Query(qId)
+	}
+}
+
+func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	if r.FormValue("qId") != "" {
+		description := r.FormValue("description")
+		qId := r.FormValue("qId")
+		stmt1, _ := db.Prepare("update challenges set description = ($1) where id = ($2)")
+		stmt1.Query(description, qId)
+		http.Redirect(w, r, "programmingtest", 301)
+	} else {
+		qId := r.URL.Query().Get("qid")
+		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
+		rows1, _ := stmt1.Query(qId)
+		questions := []questionsInformation{}
+		q := questionsInformation{}
+		for rows1.Next() {
+			err := rows1.Scan(&q.Description)
+			questions = append(questions, q)
+			checkErr(err)
+		}
+		t, _ := template.ParseFiles("./views/editchallenge.html")
+		t.Execute(w, questions)
+	}
+}
+
+func addChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("add")
+	description := r.FormValue("description")
+	fmt.Println(description)
+	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
+	stmt2.Query(description)
+	http.Redirect(w, r, "programmingtest", 301)
 }
 
 // get general information of users
@@ -140,6 +213,7 @@ type GeneralInfo struct {
 	Modified time.Time
 }
 
+// display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	stmt1 := fmt.Sprintf("select id, name, email, contact, degree, college, yearOfCompletion, created, modified from candidates")
 	rows1, _ := db.Query(stmt1)
@@ -150,8 +224,7 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion ,&user.Created, &user.Modified)
 		UsersInfo = append(UsersInfo, user)
 	}
-
-	t, _ := template.ParseFiles("./views/candidate.html")
+	t, _ := template.ParseFiles("./views/candidates.html")
 	t.Execute(w, UsersInfo)
 }
 
@@ -160,9 +233,13 @@ func main() {
 	defer db.Close()
 	goji.Handle("/questions", questionsHandler)
 	goji.Handle("/candidates", candidateHandler)
-	goji.Handle("/add", addHandler)
-	goji.Handle("/edit", editHandler)
-	goji.Handle("/delete", deleteHandler)
+	goji.Handle("/addQuestions", addQuestionsHandler)
+	goji.Handle("/editquestion", editQuesionHandler)
+	goji.Handle("/deleteQuestion", deleteQuestionHandler)
+	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
+	goji.Handle("/programmingtest", challengesHandler)
+	goji.Handle("/editchallenge", editChallengeHandler)
+	goji.Handle("/addchallenge", addChallengeHandler)
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
