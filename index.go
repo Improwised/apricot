@@ -1,116 +1,156 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-	"database/sql"
-	_"github.com/lib/pq"
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web"
-	"html/template"
-	"encoding/json"
-	"time"
-	"os"
-	"bytes"
-	"crypto/sha1"
-	"encoding/hex"
-	"github.com/icza/session"
-	"gopkg.in/gomail.v2"
-	_"reflect"
-	// "strconv"
+  "fmt"
+  "net/http"
+  "database/sql"
+  _"github.com/lib/pq"
+  "github.com/zenazn/goji"
+  "github.com/zenazn/goji/web"
+  "html/template"
+  "encoding/json"
+  "time"
+  "io"
+  "os"
+  "bytes"
+  "crypto/sha1"
+  "encoding/hex"
+  _"github.com/icza/session"
+  "gopkg.in/gomail.v2"
+  _"reflect"
+  // "strconv"
 )
 
 type Configuration struct {
-	DbName string
-	UserName string
+  DbName string
+  UserName string
 }
 
 var db *sql.DB
 func setupDB() *sql.DB {
-	file, _ := os.Open("./config/configuration.json")
-	decoder := json.NewDecoder(file)
-	configuration := Configuration{}
-	decoder.Decode(&configuration)
+  file, _ := os.Open("./config/configuration.json")
+  decoder := json.NewDecoder(file)
+  configuration := Configuration{}
+  decoder.Decode(&configuration)
 
-	userName := configuration.UserName
-	dbName := configuration.DbName
+  userName := configuration.UserName
+  dbName := configuration.DbName
 
-	dbinfo := fmt.Sprintf("user=%s dbname=%s sslmode=disable",
-		userName, dbName)
-	db, err := sql.Open("postgres", dbinfo)
-	checkErr(err)
-	return db
+  dbinfo := fmt.Sprintf("user=%s dbname=%s sslmode=disable",
+    userName, dbName)
+  db, err := sql.Open("postgres", dbinfo)
+  checkErr(err)
+  return db
 }
 
 func checkErr(err error) {
-	if err != nil {
-		panic(err)
-	}
+  if err != nil {
+    panic(err)
+  }
 }
 
-type generalInfo struct {
 type GeneralInfo struct {
-	Id string
-	Name string
-	Contact string
-	Degree string
-	College string
-	YearOfCompletion string
+  Id string
+  Name string
+  Contact string
+  Degree string
+  College string
+  YearOfCompletion string
 }
 
 type sessionInfo struct {
-	candidateid string
-	hash string
+  candidateid string
+  hash string
+  entryDate time.Time
+	modifyDate time.Time
+	expireDate time.Time
 }
 
-var cId string
-func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	email := r.URL.Query().Get("email")
-	//Check whether email empty or not
-	if email == "" {
-		t, _ := template.ParseFiles("./views/index.html")
-		t.Execute(w, t)
-	} else {
+var hash string
+func hashGenerator() {
+	random := time.Now().String()
+	random += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$^&*()_+"
+	h := sha1.New()
+	h.Write([]byte(random))
+	hash = hex.EncodeToString(h.Sum(nil))
+}
 
-		var hash string
+func mail(key string , mail string) {
+	m := gomail.NewMessage()
+	m.SetHeader("From", "akumbhani666@gmail.com")
+	m.SetHeader("To", mail)
+	m.SetHeader("Subject", "Hello!")
+	m.SetBody("text/html", "localhost:8000/information?key=" + key)
+	d := gomail.NewPlainDialer("smtp.gmail.com", 587, "akumbhani666@gmail.com", "9712186012")
+	if err := d.DialAndSend(m); err != nil {
+	checkErr(err)
+	}
+}
+
+func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+  email := r.URL.Query().Get("email")
+  //Check whether email empty or not
+  if email == "" {
+    t, _ := template.ParseFiles("./views/index.html")
+    t.Execute(w, t)
+  } else {
+
+
+
+    var flag int = 0
 
 		stmt, _ := db.Prepare("SELECT id FROM candidates WHERE email = ($1)")
 		rows, _ := stmt.Query(email)
+		candidateid := []GeneralInfo{}
+		info := GeneralInfo{}
+		for rows.Next() {
+			err := rows.Scan(&info.Id)
+			candidateid = append(candidateid, info)
+			checkErr(err)
+			flag = 1
+		}
 		//If candidate already registread before
-		if rows.Next() != false {
-			query, _ := db.Prepare("SELECT candidateid,hash FROM sessions WHERE candidateid = (select id from candidates where email = ($1))")
+		if flag == 1 {
+			query, _ := db.Prepare("SELECT candidateid, hash, created, expired FROM sessions WHERE candidateid = (select id from candidates where email = ($1))")
 			row2,_ := query.Query(email)
-
-			 mysession := []sessionInfo{}
-			 info := sessionInfo{}
+			mysession := []sessionInfo{}
+			info := sessionInfo{}
 			for row2.Next() {
-				err := row2.Scan(&info.candidateid,&info.hash)
+				err := row2.Scan(&info.candidateid, &info.hash, &info.entryDate, &info.expireDate)
 				mysession = append(mysession, info)
 				checkErr(err)
 			}
-			hash += mysession[0].hash
+			//check for hash expired or not...
+			remainTime := mysession[0].expireDate.Sub(time.Now())
 
-		} else {//For new registration
+			if remainTime.Seconds() < 0 {
 
-			random := time.Now().String()
-			random += "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$^&*()_+"
-			h := sha1.New()
-			h.Write([]byte(random))
-			hash = hex.EncodeToString(h.Sum(nil))
+				hashGenerator()
 
-			sesssionHash := session.NewSession()
-			session.Add(sesssionHash, w)
-			sess := sesssionHash.Id()
-			fmt.Println(sess)
+				now := time.Now()
+				sevenDay := time.Hour * 24 * 7
+				time := now.Add(sevenDay)
+				query1, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created, expired) VALUES($1, $2, NOW(), $3)")
+				query1.Exec(hash, candidateid[0].Id, time )
+
+				mail(hash,email)
+
+			} else {
+				hash = ""
+				hash += mysession[0].hash
+				mail(hash,email)
+			}
+
+		} else if flag == 0 {//For new registration
+
+			hashGenerator()
+
 			stmt1, err := db.Prepare("INSERT INTO candidates (email) VALUES($1)")
-			stmt1, err := db.Prepare("INSERT INTO candidates (email,created) VALUES($1,NOW())")
 			stmt1.Exec(email)
 			checkErr(err)
 			stmt2, err := db.Prepare("select id from candidates where email = ($1)")
 			checkErr(err)
 			rows2, err := stmt2.Query(email)
-			information := []generalInfo{}
-			info := generalInfo{}
 			information := []GeneralInfo{}
 			info := GeneralInfo{}
 			for rows2.Next() {
@@ -120,100 +160,91 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			}
 
 			stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer) values ($1, $2, $3)")
-			stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer, created) values ($1, $2, $3, NOW())")
 			rows4, _ := db.Query("select id from questions")
 			counter := 1
 			for rows4.Next() {
 				stmt3.Query(information[0].Id, counter, "")
 				counter += 1
 			}
-			stmt4, _ := db.Prepare("INSERT INTO sessions (hash,candidateId) VALUES($1, $2)")
-			stmt4, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created) VALUES($1, $2, NOW())")
-			stmt4.Exec(hash,information[0].Id)
+			//=========counting time for 7 days
+			now := time.Now()
+					sevenDay := time.Hour * 24 * 7
+					time := now.Add(sevenDay)
+			//=======
+			stmt4, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created, expired) VALUES($1, $2, NOW(), $3)")
+			stmt4.Exec(hash, information[0].Id, time)
 
+			mail(hash,email)
 		}
-		m := gomail.NewMessage()
-		m.SetHeader("From", "akumbhani666@gmail.com")
-		m.SetHeader("To", email)
-		m.SetHeader("Subject", "Hello!")
-		m.SetBody("text/html", "localhost:8000/information?key=" + hash)
-		d := gomail.NewPlainDialer("smtp.gmail.com", 587, "akumbhani666@gmail.com", "9712186012")
-		if err := d.DialAndSend(m); err != nil {
-				panic(err)
 
-	}
-	 t, _ := template.ParseFiles("./views/index.html")
-		t.Execute(w, t)
-}
+	io.WriteString(w, "<h1>Link Has Been Sent to your email address...</h1><br>")
 	}
 }
 
-type getQuestions struct {
 type GetQuestions struct {
-	Questions string
-	Id string
-	Ans  string
+  Questions string
+  Id string
+  Ans  string
 }
 
-type getAnswers struct {
 type GetAnswers struct {
-	Answer string
-	Qid string
+  Answer string
+  Qid string
 }
 
 type AllDetail struct {
-  GeneralInformation []GeneralInfo
-  GetAllQuestions []GetQuestions
+  GeneralInfo []GeneralInfo
+  GetQuestions []GetQuestions
 }
 
-var hash string
 func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	hash = r.URL.Query().Get("key")
-	processFormData(w, r)
+  hash := r.URL.Query().Get("key")
+  // ===============TODO check hash expired or not...===================
+	query, _ := db.Prepare("SELECT expired FROM sessions where hash = ($1)")
+	result, _ := query.Query(hash)
 
-	allDetails := AllDetail{}
-
-	// get all questions
-	rows, _ := db.Query("select id, description from questions order by sequence")
-	questionsInfo := []getQuestions{}
-	qinfo := getQuestions{}
-	questionsInfo := []GetQuestions{}
-	qinfo := GetQuestions{}
-	for rows.Next() {
-		err := rows.Scan(&qinfo.Id, &qinfo.Questions)
-		questionsInfo = append(questionsInfo, qinfo)
+	mysession := []sessionInfo{}
+	info := sessionInfo{}
+	for result.Next() {
+		err := result.Scan(&info.expireDate)
+		mysession = append(mysession, info)
 		checkErr(err)
 	}
-	stmt2, _ := db.Prepare("SELECT answer, questionsid FROM questions_answers where candidateId = (select candidateId from sessions where hash = ($1))")
-	rows2, _ := stmt2.Query(hash)
 
-	for rows2.Next() {
-		getanswer := getAnswers{}
-		getanswer := GetAnswers{}
-		err := rows2.Scan(&getanswer.Answer, &getanswer.Qid)
-		for index, element := range questionsInfo {
-			if(element.Id == getanswer.Qid) {
-				questionsInfo[index].Ans = getanswer.Answer
-			}
-		}
-		checkErr(err)
+	remainTime := mysession[0].expireDate.Sub(time.Now())
+	if remainTime.Seconds() < 0 {
+		io.WriteString(w, "<h1>Sorry !! Link Has Been Expired...</h1><br><h4><a href=localhost:8000/index >Click Here </a>To Goto LogIn Page.</h4>")
+		return
 	}
-	rows3, _ := db.Query("SELECT name FROM candidates where id = 1")
-	// rows3, _ := stmt3.Query(email)
-	// questionsinfo := []questioninformation{}
-	// info := information{}
-	for rows3.Next() {
-		// err := rows3.Scan(&info.Username)
-		// // questionsinfo = append(questionsinfo, questioninfo)
-		// users[0].Qinfo.Username = info.Username
-		// checkErr(err)
-	}
-	t, _ := template.ParseFiles("./views/information.html")
-	t.Execute(w, questionsInfo)
-	dataUpdate(w,r, hash)
+	// =================================================
+  // processFormData(w, r)
+  allDetails := AllDetail{}
 
-	//get user detail
-	User := []GeneralInfo{}
+  // get all questions
+  rows, _ := db.Query("select id, description from questions order by sequence")
+  questionsInfo := []GetQuestions{}
+  qinfo := GetQuestions{}
+  for rows.Next() {
+    err := rows.Scan(&qinfo.Id, &qinfo.Questions)
+    questionsInfo = append(questionsInfo, qinfo)
+    checkErr(err)
+  }
+  stmt2, _ := db.Prepare("SELECT answer, questionsid FROM questions_answers where candidateId = (select candidateId from sessions where hash = ($1))")
+  rows2, _ := stmt2.Query(hash)
+
+  for rows2.Next() {
+    getanswer := GetAnswers{}
+    err := rows2.Scan(&getanswer.Answer, &getanswer.Qid)
+    for index, element := range questionsInfo {
+      if(element.Id == getanswer.Qid) {
+        questionsInfo[index].Ans = getanswer.Answer
+      }
+    }
+    checkErr(err)
+  }
+
+  //get user detail
+  User := []GeneralInfo{}
   user := GeneralInfo{}
   stmt3, _ := db.Prepare("select id, name, contact, degree, college,yearOfCompletion from candidates where id = (select candidateId from sessions where hash = ($1))")
   row3, _ := stmt3.Query(hash)
@@ -221,84 +252,86 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
     row3.Scan(&user.Id, &user.Name, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion)
     User = append(User, user)
   }
-
+ 	dataUpdate(w, r, hash)
   t, _ := template.ParseFiles("./views/information.html")
 
-  allDetails.GeneralInformation = User
-  allDetails.GetAllQuestions = questionsInfo
+  allDetails.GeneralInfo = User
+  allDetails.GetQuestions = questionsInfo
 
   t.Execute(w, allDetails)
-  dataUpdate(w, r, hash)
+
 
 }
 
 func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
-	db = setupDB()
-	data := r.URL.Query().Get("data")
-	id := r.URL.Query().Get("id")
-	var table="questions_answers";
-	if id == "email" || id == "name" || id == "contact" || id == "degree" || id == "college" || id == "yearOfCompletion"{
-		table = "candidates"
-	}
+  db = setupDB()
+  data := r.URL.Query().Get("data")
+  id := r.URL.Query().Get("id")
+  var table="questions_answers";
+  if id == "name" || id == "contact" || id == "degree" || id == "college" || id == "yearOfCompletion"{
+    table = "candidates"
+  }
 
-	var buffer bytes.Buffer
-	buffer.WriteString("UPDATE ")
-	buffer.WriteString(table)
+  var buffer bytes.Buffer
+  buffer.WriteString("UPDATE ")
+  buffer.WriteString(table)
 
-	if(table == "questions_answers"){
-		buffer.WriteString(" set answer=")
-		buffer.WriteString("'" + data + "'")
-		buffer.WriteString(" where questionsid="+ id)
-		buffer.WriteString(",modified=NOW() where questionsid="+ id)
-		//  buffer.WriteString("'" + id + "'")
-		buffer.WriteString(" AND")
-		buffer.WriteString(" candidateid=(select candidateId from sessions where hash=")
-		buffer.WriteString("'" + hash + "'")
-		buffer.WriteString(")")
-	}
+  if(table == "questions_answers"){
+    buffer.WriteString(" set answer=")
+    buffer.WriteString("'" + data + "'")
+    buffer.WriteString(",modified=NOW() where questionsid="+ id)
+    //  buffer.WriteString("'" + id + "'")
+    buffer.WriteString(" AND")
+    buffer.WriteString(" candidateid=(select candidateId from sessions where hash=")
+    buffer.WriteString("'" + hash + "'")
+    buffer.WriteString(")")
+  }
 
-	if(table == "candidates"){
-		buffer.WriteString(" SET ")
-		buffer.WriteString(id)
-		buffer.WriteString("=")
-		buffer.WriteString("'" + data + "'")
-		buffer.WriteString(" where id=(select candidateId from sessions where hash =")
-		buffer.WriteString(",modified=NOW() where id=(select candidateId from sessions where hash =")
-		buffer.WriteString("'" + hash + "')")
-	}
-	db.Query(buffer.String())
+  if(table == "candidates"){
+    buffer.WriteString(" SET ")
+    buffer.WriteString(id)
+    buffer.WriteString("=")
+    buffer.WriteString("'" + data + "'")
+    buffer.WriteString(",modified=NOW() where id=(select candidateId from sessions where hash =")
+    buffer.WriteString("'" + hash + "')")
+  }
+  db.Query(buffer.String())
  }
 
+func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+   processFormData(w, r)
+}
+
 func processFormData(w http.ResponseWriter, r *http.Request)  {
-	db = setupDB()
-	r.ParseForm()
+  db = setupDB()
+  r.ParseForm()
 
-	if r.Method == "POST" {
-		name := r.FormValue("name")
-		contact := r.FormValue("contact")
-		degree := r.FormValue("degree")
-		college := r.FormValue("college")
-		yearOfCompletion := r.FormValue("yearOfCompletion")
-		hash := r.FormValue("email")
-
-		for key, values := range r.Form["message"] {   // range over map
-			stmt, _ := db.Prepare("update questions_answers set answer=($1),modified=NOW() where candidateid=(select candidateid from sessions where hash=($2)) AND questionsid=($3)")
-			stmt.Query(values, hash ,key+1)
-		}
-		var buffer bytes.Buffer
-		buffer.WriteString("UPDATE candidates SET name='" + name +"',contact='" + contact + "',degree='" + degree +"',college='" + college + "',yearOfCompletion='" + yearOfCompletion + "',modified=NOW() where id=(select candidateid from sessions where hash ='" + hash + "')")
-		db.Query(buffer.String())
-	}
+  if r.Method == "POST" {
+    name := r.FormValue("name")
+    contact := r.FormValue("contact")
+    degree := r.FormValue("degree")
+    college := r.FormValue("college")
+    yearOfCompletion := r.FormValue("yearOfCompletion")
+    hash := r.FormValue("email")
+    for key, values := range r.Form["message"] {   // range over map
+      stmt, _ := db.Prepare("update questions_answers set answer=($1),modified=NOW() where candidateid=(select candidateid from sessions where hash=($2)) AND questionsid=($3)")
+      stmt.Query(values, hash ,key+1)
+    }
+    var buffer bytes.Buffer
+    buffer.WriteString("UPDATE candidates SET name='" + name +"',contact='" + contact + "',degree='" + degree +"',college='" + college + "',yearOfCompletion='" + yearOfCompletion + "',modified=NOW() where id=(select candidateid from sessions where hash ='" + hash + "')")
+    db.Query(buffer.String())
+  }
 }
 
 func main() {
-	db = setupDB()
-	defer db.Close()
-	goji.Handle("/index", indexHandler)
-	goji.Handle("/information", informationHandler)
-	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
-	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
-	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
-	http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
-	goji.Serve()
+  db = setupDB()
+  defer db.Close()
+  goji.Handle("/index", indexHandler)
+  goji.Handle("/information", informationHandler)
+  goji.Handle("/challenges", challengesHandler)
+  http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
+  http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
+  http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
+  http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
+  goji.Serve()
 }
