@@ -92,14 +92,35 @@ function deleteQuestion(qId, element) {
 	if (flag == 1) {
 		status = "no"
 		element.src ="../assets/img/true.png";
-		xmlhttp.open("GET", "/delete?qid=" + qId+ "&deleted=" + status, true);
+		xmlhttp.open("GET", "/deleteQuestion?qid=" + qId+ "&deleted=" + status, true);
 
 		flag = 0;
 	}
   else if (flag == 0) {
 		status = "yes"
 		element.src="../assets/img/false.png";
-		xmlhttp.open("GET", "/delete?qid=" + qId+ "&deleted=" + status, true);
+		xmlhttp.open("GET", "/deleteQuestion?qid=" + qId+ "&deleted=" + status, true);
+		flag = 1;
+
+	}
+	xmlhttp.send();
+}
+
+function deleteChallenge(qId, element) {
+	if (window.XMLHttpRequest) {
+		xmlhttp=new XMLHttpRequest();
+	}
+	if (flag == 1) {
+		status = "no"
+		element.src ="../assets/img/true.png";
+		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
+
+		flag = 0;
+	}
+  else if (flag == 0) {
+		status = "yes"
+		element.src="../assets/img/false.png";
+		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
 		flag = 1;
 
 	}
