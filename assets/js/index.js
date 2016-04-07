@@ -1,21 +1,21 @@
 function checkform(pform1){
-    var email = pform1.email.value;
-    var err={};
-    var validemail =/^([a-zA-Z0-9_\.\-\+\_])+\@(([a-zA-Z0-9\-\+])+\.)+([a-zA-Z0-9]{2,4})+$/;
+		var email = pform1.email.value;
+		var err={};
+		var validemail =/^([a-zA-Z0-9_\.\-\+\_])+\@(([a-zA-Z0-9\-\+])+\.)+([a-zA-Z0-9]{2,4})+$/;
 
-    //validate email
-    if(!(validemail.test(email))) {
-        err.message="Invalid email";
-        err.field=pform1.email;
-    }
-    if(err.message) {
-        document.getElementById('divError').innerHTML = err.message;
-        err.field.focus();
-        return false;
-    }
-    else {
-        return true;
-    }
+		//validate email
+		if(!(validemail.test(email))) {
+				err.message="Invalid email";
+				err.field=pform1.email;
+		}
+		if(err.message) {
+				document.getElementById('divError').innerHTML = err.message;
+				err.field.focus();
+				return false;
+		}
+		else {
+				return true;
+		}
 }
 
 //data retrive from html form
@@ -59,6 +59,7 @@ function confirmMsg() {
 
 //getting email and passing as hidden
 function emailHidden() {
+	// console.log("called");
 	url = window.location.search.substring(1);
 	var hash;
 	var myJson = {};
@@ -70,6 +71,7 @@ function emailHidden() {
  }
 
  document.getElementById("email").value = myJson[hash[0]];
+ console.log(myJson[hash[0]]);
 }
 
 function getQid() {
@@ -98,7 +100,7 @@ function deleteQuestion(qId, element) {
 
 		flag = 0;
 	}
-  else if (flag == 0) {
+	else if (flag == 0) {
 		status = "yes"
 		element.src="../assets/img/false.png";
 		xmlhttp.open("GET", "/deleteQuestion?qid=" + qId+ "&deleted=" + status, true);
@@ -119,7 +121,7 @@ function deleteChallenge(qId, element) {
 
 		flag = 0;
 	}
-  else if (flag == 0) {
+	else if (flag == 0) {
 		status = "yes"
 		element.src="../assets/img/false.png";
 		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
@@ -127,4 +129,33 @@ function deleteChallenge(qId, element) {
 
 	}
 	xmlhttp.send();
+}
+
+function getHrResponse() {
+	var source = $('#sourceCode').val();
+	url = window.location.search.substring(1);
+	var hash;
+	var myJson = {};
+	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+
+	for (var i = 0; i < hashes.length; i++) {
+		hash = hashes[i].split('=');
+		myJson[hash[0]] = hash[1];
+	}
+	key = myJson[hash[0]] ;
+
+	xmlhttp=new XMLHttpRequest();
+	xmlhttp.open("POST", "/challenge", true);
+
+	$.ajax({
+		url: "/challenge",
+		type: 'post',
+		crossDomain : true,
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			problem : source,
+			hash : key,
+		},
+	});
+
 }

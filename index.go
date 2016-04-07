@@ -60,7 +60,9 @@ type GeneralInfo struct {
 
 type sessionInfo struct {
 	candidateid string
+	sessionid string
 	hash string
+	attempts int
 	entryDate time.Time
 	modifyDate time.Time
 	expireDate time.Time
@@ -177,7 +179,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			}
 
 			stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer, created) values ($1, $2, $3, NOW())")
-			rows4, _ := db.Query("select id from questions")
+			rows4, _ := db.Query("select id from questions where deleted IS NULL")
 			counter := 1
 			for rows4.Next() {
 				stmt3.Query(information[0].Id, counter, "")
@@ -278,7 +280,7 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, allDetails)
 }
 
-func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
+func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 	db = setupDB()
 	data := r.URL.Query().Get("data")
 	id := r.URL.Query().Get("id")
@@ -314,11 +316,60 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, email string) {
  }
 
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	// challenge(w,r)
 	processFormData(w, r)
-	http.Redirect(w, r, "/challenge", 301)
+	hash := r.FormValue("email")
+	fmt.Println(hash)
+	http.Redirect(w, r, "/challenge?key="+ hash, 301)
 }
 
+//save programme and no of attempts into database while compiling
 func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	source := r.FormValue("problem")
+	key := r.FormValue("hash")
+	var buffer, buffer2 bytes.Buffer
+
+	if source != ""{
+		buffer.WriteString("select id from sessions where hash=")
+		buffer.WriteString("'" + key + "'")
+		query := buffer.String()
+
+		rows5, _ := db.Query(query)
+		mysession := []sessionInfo{}
+		info := sessionInfo{}
+		for rows5.Next() {
+			err := rows5.Scan(&info.sessionid)
+			mysession = append(mysession, info)
+			checkErr(err)
+		}
+		sessionid := mysession[0].sessionid
+
+		buffer2.WriteString("select MAX(attempts) from challenge_answers where sessionid=")
+		buffer2.WriteString("'" + sessionid + "'")
+		query2 := buffer2.String()
+
+		rows6, err := db.Query(query2)
+		attempts := 0
+		mysession2 := []sessionInfo{}
+		info2 := sessionInfo{}
+		var query3 string
+		for rows6.Next() {
+			err := rows6.Scan(&info2.attempts)
+			mysession2 = append(mysession2, info2)
+
+			if err != nil{
+				attempts = 0;
+				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, created) VALUES($1, $2, $3, NOW())"
+			} else  {
+				attempts = mysession2[0].attempts
+				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, modified) VALUES($1, $2, $3, NOW())"
+			}
+		}
+		fmt.Println(query3)
+		stmt1, err := db.Prepare(query3)
+		stmt1.Exec(sessionid, source, attempts + 1)
+		checkErr(err)
+	}
 	t, _ := template.ParseFiles("./views/challenges.html")
 	t.Execute(w, t)
 }
