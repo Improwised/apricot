@@ -86,8 +86,8 @@ func mail(key string , mail string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "akumbhani666@gmail.com")
 	m.SetHeader("To", mail)
-	m.SetHeader("Subject", "Hello!")
-	m.SetBody("text/html", "localhost:8000/information?key=" + key)
+	m.SetHeader("Subject", "Interview Process")
+	m.SetBody("text/html", " <div style='font-size: 15px'>This is an automated mail from Improwised Technologies for your interview process. <br>Visit the link below to start with your interview process. <br><br> <div style='color: Blue'>localhost:8000/information?key="+ key + "</div> <br><div style='color: Red'>Note: Your link is active for next 7 days only. </div> <br><br> Please ignore if you are done with the process. <br><br><br> Best Regards, <br> Improwised Technologies </div>")
 	d := gomail.NewPlainDialer("smtp.gmail.com", 587, "akumbhani666@gmail.com", "9712186012")
 	if err := d.DialAndSend(m); err != nil {
 	checkErr(err)
@@ -139,13 +139,11 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 				query1.Exec(hash, candidateid[0].Id, time, mysession[0].challenge)
 
 				mail(hash,email)
-
 			} else {
 				hash = ""
 				hash += mysession[0].hash
 				mail(hash,email)
 			}
-
 		} else if flag == 0 {//For new registration
 
 			hashGenerator()
@@ -162,6 +160,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			}
 
 			randomChallenge := rand.Intn(counter1.Challenges)
+
 			//======================================================================
 
 			stmt1, err := db.Prepare("INSERT INTO candidates (email) VALUES($1)")
@@ -196,8 +195,13 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			mail(hash,email)
 		}
 
-	io.WriteString(w, "<h1>Link Has Been Sent to your email address...</h1><br>")
+		http.Redirect(w, r, "/confirmation", 301)
 	}
+}
+
+func confirmationPage(c web.C, w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./views/confirmation.html")
+	t.Execute(w, t)
 }
 
 type GetQuestions struct {
@@ -293,7 +297,7 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 	buffer.WriteString("UPDATE ")
 	buffer.WriteString(table)
 
-	if(table == "questions_answers"){
+	if(table == "questions_answers") {
 		buffer.WriteString(" set answer=")
 		buffer.WriteString("'" + data + "'")
 		buffer.WriteString(",modified=NOW() where questionsid="+ id)
@@ -304,7 +308,7 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 		buffer.WriteString(")")
 	}
 
-	if(table == "candidates"){
+	if(table == "candidates") {
 		buffer.WriteString(" SET ")
 		buffer.WriteString(id)
 		buffer.WriteString("=")
@@ -413,6 +417,7 @@ func main() {
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
 	goji.Handle("/challenge", challengeHandler)
+	goji.Handle("/confirmation", confirmationPage)
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
