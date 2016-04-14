@@ -131,31 +131,69 @@ function deleteChallenge(qId, element) {
 	xmlhttp.send();
 }
 
-function getHrResponse() {
-	var source = $('#sourceCode').val();
-	url = window.location.search.substring(1);
-	var hash;
-	var myJson = {};
-	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+function getHrResponse(id) {
+  var source = $('#sourceCode').val();
+  var language = $(".language").val();
+  url = window.location.search.substring(1);
+  var hash;
+  var myJson = {};
+  var hashes = url.slice(url.indexOf('?') + 1).split('&');
 
-	for (var i = 0; i < hashes.length; i++) {
-		hash = hashes[i].split('=');
-		myJson[hash[0]] = hash[1];
-	}
-	key = myJson[hash[0]] ;
+  for (var i = 0; i < hashes.length; i++) {
+    hash = hashes[i].split('=');
+    myJson[hash[0]] = hash[1];
+  }
+  key = myJson[hash[0]] ;
+  xmlhttp=new XMLHttpRequest();
+  xmlhttp.open("POST", "/challenge", true);
 
-	xmlhttp=new XMLHttpRequest();
-	xmlhttp.open("POST", "/challenge", true);
+  $.ajax({
+    url: "hrresponse",
+    type: 'post',
+    crossDomain : true,
+    contentType: "application/x-www-form-urlencoded",
+    data: {
+     source : source,
+     hash : key,
+     id : id,
+     language : language
+    },
+  });
+}
 
-	$.ajax({
-		url: "/challenge",
-		type: 'post',
-		crossDomain : true,
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			problem : source,
-			hash : key,
-		},
-	});
+function getLanguages() {
+  var obj = {};
+  var i = 0;
+  var languages = [];
+  $.ajax({
+    url: "http://api.hackerrank.com/checker/languages.json",
+    type: 'GET',
+   // headers : { 'Access-Control-Allow-Origin': '*' },
+    crossDomain : true,
+    contentType: "application/x-www-form-urlencoded",
+    data: {
+      api_key : "hackerrank|768030-708|2f417cf30f50ac1385dd76338a5e5c78c7dd87e9",
+      format : "json",
+    },
 
+  success: function (response) {
+    obj = response.languages.codes;
+    for (var key in obj) {
+      languages[i] = key;
+      $('.language').append($('<option>', {
+        value: obj[key],
+        text: key,
+      }));
+
+      i += 1;
+    }
+    console.log(languages);
+  },
+  error: function (response) {
+
+  },
+
+  });
+  console.log("lang");
+  console.log(languages);
 }
