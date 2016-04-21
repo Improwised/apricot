@@ -191,3 +191,15 @@ function getLanguages() {
 	},
 	});
 }
+
+function generateTextbox()
+{
+  var totalTestcases = document.getElementById("testcases").value;
+  var createTextbox = document.getElementById("createTextbox");
+
+  for(var i = 1; i <= totalTestcases; i++)
+  {
+    createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
+    createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
+  }
+}

@@ -237,19 +237,20 @@ type AllDetail struct {
 func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("key")
 	// ===============TODO check hash expired or not...===================
-	query, _ := db.Prepare("SELECT expired FROM sessions where hash = ($1)")
+	query, _ := db.Prepare("SELECT expired,status FROM sessions where hash = ($1)")
 	result, _ := query.Query(hash)
 
 	mysession := []sessionInfo{}
 	info := sessionInfo{}
 	for result.Next() {
-		err := result.Scan(&info.expireDate)
+		err := result.Scan(&info.expireDate, &info.status)
 		mysession = append(mysession, info)
 		checkErr(err)
 	}
 
 	remainTime := mysession[0].expireDate.Sub(time.Now())
-	if remainTime.Seconds() < 0 {
+	status := mysession[0].status
+	if remainTime.Seconds() < 0 || status != 1 {
 	 http.Redirect(w, r, "/expired", 302)
 		return
 	}
@@ -601,7 +602,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 		if id == "submitCode" {
 			cCases := []GetChallenge_cases{}
 			c := GetChallenge_cases{}
-			stmt1, _ := db.Prepare("select imput, output from challenge_cases where challengeid = (select challengeid from sessions where hash = ($1))")
+			stmt1, _ := db.Prepare("select input, output from challenge_cases where challengeid = (select challengeid from sessions where hash = ($1))")
 			rows1, _ := stmt1.Query(hash)
 			for rows1.Next() {
 				rows1.Scan(&c.Input, &c.Output)
