@@ -72,7 +72,7 @@ func mail(key string , mail string) {
 	m := gomail.NewMessage()
 	m.SetHeader("From", "akumbhani666@gmail.com")
 	m.SetHeader("To", mail)
-	m.SetHeader("Subject", "Hello!")
+	m.SetHeader("Subject", "Interview Process")
 	m.SetBody("text/html", " <div style='font-size: 15px'>This is an automated mail from Improwised Technology for your interview process. <br>Visit the link below to start with your interview process. <br><br> <div>http://localhost:8000/information?key="+ key + "</div> <br><div style='color: Red'>Note: Your link is active for next 7 days only. </div> <br> Please ignore if you are done with the process. <br><br><br> Best Regards, <br> Improwised Technologies </div>")
 	d := gomail.NewPlainDialer("smtp.gmail.com", 587, "akumbhani666@gmail.com", "9712186012")
 	if err := d.DialAndSend(m); err != nil {
@@ -333,7 +333,6 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	processFormData(w, r)
 	hash := r.FormValue("hash")
-
 	http.Redirect(w, r, "/challenge?key="+ hash, 302)
 }
 
@@ -360,7 +359,6 @@ type getHash struct {
 func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	// ===============TODO check hash expired or not...===================
 	hash := r.URL.Query().Get("key")
-
 	query, _ := db.Prepare("SELECT expired,status FROM sessions where hash = ($1)")
 	result, _ := query.Query(hash)
 
@@ -530,12 +528,12 @@ type passHrResponse struct {
 }
 
 func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
+
 	source := r.FormValue("source")
 	language := r.FormValue("language")
 	hash := r.FormValue("hash")
 	id := r.FormValue("id")
 	var sessionid string
-
 	//will save the source code to databse when user run the code
 	var buffer2 bytes.Buffer
 	if source != ""{
@@ -582,6 +580,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 		//chek whether user run the code or submit the code
 		var testcases []string
 		var outputDatabase []string
+		var clientResponse []string
 		//when user run the code only default testcase will chek for compilation
 		if id == "runCode" {
 			stmt1, _ := db.Prepare("select input, output from challenge_cases where challengeid = (select challengeid from sessions where hash = ($1) ) and defaultcase =true")
@@ -594,8 +593,10 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 				testcases = append(testcases, c.Input)
 				outputDatabase = append(outputDatabase, c.Output)
 			}
-			// inputDatabase := cCases[0].Input//input from database
-			// outputDatabases := cCases[0].Output//output from database
+			inputDatabase := cCases[0].Input//input from database
+			clientResponse = append(clientResponse, inputDatabase)
+			outputDatabases := cCases[0].Output//output from database
+			clientResponse = append(clientResponse, outputDatabases)
 		}
 
 		//when user submit the code all the testcases will chek for compilation and response from hackerrank will be stored in database
@@ -638,15 +639,31 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 		HrMesageToDisplay.Compilemessage = HrInfo.Result.Compilemessage
 		HrMesageToDisplay.Stdout = HrInfo.Result.Stdout
 
-		fmt.Println(HrMesageToDisplay.Compilemessage)
-		// //check for all the testcases from database..
+		if(HrMesageToDisplay.Stdout == nil){
+			clientResponse = append(clientResponse, " ")
+		} else {
+			clientResponse = append(clientResponse, HrInfo.Result.Stdout[0])
+		}
+		clientResponse = append(clientResponse, HrMesageToDisplay.Compilemessage)
+
+		//converting structure to JSON=======
+		bytes, err := json.Marshal(clientResponse)
+
+		if err != nil {
+			return
+		}
+		// =====================
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(bytes))
+
+		 //check for all the testcases from database..
 		var outputResponse []string
 		var length = len(outputDatabase)
 		var status []int
 
 		if(HrMesageToDisplay.Stdout == nil){
 			for i := 0; i < length; i++ {
-				fmt.Println("&&&")
 				HrMesageToDisplay.Stdout = append(HrMesageToDisplay.Stdout ,"0")
 			}
 		}
@@ -678,13 +695,10 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 				query5.Exec(sessionid,testcases[i],outputResponse[i],status[i])
 			}
 			// =========================================session will be expire....
-			fmt.Println("update sessions set status='0' where hash='" + hash + "'")
 			query6 := "update sessions set status='0' where hash='" + hash + "'"
 			db.Query(query6)
 		}
 	}
-	t, _ := template.ParseFiles("./views/challenge.html")
-	t.Execute(w, t)
 }
 
 func confirmationPage(c web.C, w http.ResponseWriter, r *http.Request) {

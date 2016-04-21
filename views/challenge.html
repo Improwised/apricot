@@ -8,6 +8,20 @@
     <link rel="stylesheet" href="../assets/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
     <script type="text/javascript" src="../assets/js/index.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
+
+   <!-- will prevent copy,xut,paste even right click -->
+    <script type="text/javascript">
+      $(document).ready(function() {
+          $('#sourceCode').bind("cut copy paste", function(e) {
+              e.preventDefault();
+              alert("You cannot paste text into this textbox!");
+              $('#sourceCode').bind("contextmenu", function(e) {
+                  e.preventDefault();
+              });
+          });
+      });
+    </script>
+
     <style type="text/css" media="screen">
       #body-container {
         display: block;
@@ -29,7 +43,6 @@
               <a href="http://www.improwised.com/">
               <img a href="http://www.improwised.com/" id="company-logo" style="float:left; height:45px; width=90px; " src="../assets/img/logo.png">
               </a>
-              <!-- <h2 style="background:url('') no-repeat; padding-left:10px; height:50px;line-height:45px; float:left;">Apply for a Job</h2> -->
             </div>
             <div id="main-body" style="margin-top:8px; width:80%; margin-left:180px;">
               <div style="padding:20px; min-height:50px;">
@@ -44,7 +57,7 @@
                         <select name="language" class="language" >
                         </select>
                         <div class="">
-                          <textarea name="sourceCode" id="sourceCode" class="form-control" rows="20" cols="50" >{{range .GetSource}}{{.Answer}}{{end}}</textarea>
+                          <textarea name="sourceCode" id="sourceCode" onkeydown="preventPaste()" class="form-control" rows="20" cols="50" >{{range .GetSource}}{{.Answer}}{{end}}</textarea>
                         </div>
                         <br>
                         <div align="right">
@@ -55,12 +68,12 @@
                       </div>
                     </fieldset>
                       <div class="run-time full-width">
-                        <div class="field-label">Input</div>
-                        <pre class="error-output"><code></code></pre>
+                        <div class="field-label" >Input</div>
+                        <pre class="error-output" id="input"><code></code></pre>
                         <div class="field-label">Your Output</div>
-                        <pre class="error-output" id="yourOutput"><code id></code></pre>
+                        <pre class="error-output" id="yourOutput"><code></code></pre>
                         <div class="field-label">Expected Output</div>
-                        <pre class="error-output"><code align="left"></code></pre>
+                        <pre class="error-output" id="expecteOutput"><code align="left"></code></pre>
                         <div class="field-label">Compiler Message</div>
                         <pre class="error-output" id="compilemessage"><code></code></pre>
                       </div>

@@ -157,6 +157,25 @@ function getHrResponse(id) {
 			id : id,
 			language : language
 		},
+	success: function (response) {
+
+		var elem = document.getElementById("compilemessage")
+
+		$('#input').html(response[0]);
+		$('#expecteOutput').html(response[1]);
+		$('#yourOutput').html(response[2]);
+		if(response[3] == ""){
+			elem.style.color = "Green"
+			elem.style.fontWeight = "900"
+			$('#compilemessage').html("Compiled Succesfully..");
+		} else {
+			elem.style.color = "Red"
+			$('#compilemessage').html(response[3]);
+		}
+	},
+	error: function (response) {
+		console.log("error");
+	},
 	});
 }
 
@@ -194,12 +213,12 @@ function getLanguages() {
 
 function generateTextbox()
 {
-  var totalTestcases = document.getElementById("testcases").value;
-  var createTextbox = document.getElementById("createTextbox");
+	var totalTestcases = document.getElementById("testcases").value;
+	var createTextbox = document.getElementById("createTextbox");
 
-  for(var i = 1; i <= totalTestcases; i++)
-  {
-    createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
-    createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
-  }
+	for(var i = 1; i <= totalTestcases; i++)
+	{
+		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
+		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
+	}
 }
