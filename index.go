@@ -611,6 +611,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 				testcases = append(testcases, c.Input)
 				outputDatabase = append(outputDatabase, c.Output)
 			}
+
 		}
 		bytetestcases, err := json.Marshal(testcases)
 		if err != nil {
@@ -645,7 +646,6 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			clientResponse = append(clientResponse, HrInfo.Result.Stdout[0])
 		}
 		clientResponse = append(clientResponse, HrMesageToDisplay.Compilemessage)
-
 		//converting structure to JSON=======
 		bytes, err := json.Marshal(clientResponse)
 
@@ -684,7 +684,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 
 		// will store final response from api to database..
 		if id == "submitCode" {
-			//will store source code in database once========================
+			// will store source code in database once========================
 			query4, _ := db.Prepare("insert into challenge_attempts(sessionid,input,output,solution,status,created) values($1,$2,$3,$4,$5,NOW())")
 			query4.Exec(sessionid,testcases[0],outputResponse[0],source,status[0])
 			// =========================================
@@ -711,6 +711,11 @@ func expiredPage(c web.C, w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, t)
 }
 
+func thankYouHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	t, _ := template.ParseFiles("./views/thankYouPage.html")
+	t.Execute(w, t)
+}
+
 func main() {
 	db = setupDB()
 	defer db.Close()
@@ -720,6 +725,7 @@ func main() {
 	goji.Handle("/challenge", challengeHandler)
 	goji.Handle("/hrresponse", getHrResponse)
 	goji.Handle("/confirmation", confirmationPage)
+	goji.Handle("/thankYouPage", thankYouHandler)
 	goji.Handle("/expired", expiredPage)
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))

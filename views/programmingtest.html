@@ -68,16 +68,29 @@
                        <h4 class="modal-title">Challenge</h4>
                       </div>
                       <div class="modal-body">
-                        <form class="form-horizontal" role="form" method="POST" action="./addchallenge">
+                        <form class="form-horizontal" role="form" onsubmit="getid(document.getElementById('testcases').value,document.getElementById('description').value)" method="GET" action="./addchallenge" >
                           <div class="form-group">
                             <label class="control-label col-sm-2" for="description">Description:</label>
                             <div class="col-sm-10">
                             <input type="text" class="form-control" name="description" id="description" style="width: 700px; height: 30px;"value="" required placeholder="Enter description">
                             </div>
                           </div>
+
+                          <div class="form-group">
+                            <label class="control-label col-sm-2" for="sequence">Testcases:</label>
+                            <div class="col-sm-10">
+                            <input type="text" class="form-control" name="testcases" id="testcases" style="width: 130px; height: 30px;" value="" placeholder="">
+                            </div>
+                            <div class="col-sm-offset-2 col-sm-10">
+                              <input type="button" class="btn btn-default" style="margin-top:-50px;margin-left:150px;" name= "Add" value="Add" onclick="generateTextbox();"/>
+                            </div>
+                            <br>
+                            <div id="createTextbox"></div>
+                          </div>
+
                           <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-default" name = "submit" value="Submit">
+                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
                             </div>
                           </div>
                         </form>

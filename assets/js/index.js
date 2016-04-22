@@ -158,20 +158,28 @@ function getHrResponse(id) {
 			language : language
 		},
 	success: function (response) {
-
 		var elem = document.getElementById("compilemessage")
 
 		$('#input').html(response[0]);
 		$('#expecteOutput').html(response[1]);
-		$('#yourOutput').html(response[2]);
+
+		if(response[2] == ""){
+			elem.style.color = "Red"
+			elem.style.fontWeight = "900"
+			$('#yourOutput').html("Error...");
+		} else {
+			$('#yourOutput').html(response[2]);
+		}
+
 		if(response[3] == ""){
 			elem.style.color = "Green"
 			elem.style.fontWeight = "900"
-			$('#compilemessage').html("Compiled Succesfully..");
+			$('#compilemessage').html("Compiled Succesfully...");
 		} else {
 			elem.style.color = "Red"
 			$('#compilemessage').html(response[3]);
 		}
+		window.location="http://localhost:8000/thankYouPage";
 	},
 	error: function (response) {
 		console.log("error");
@@ -218,7 +226,26 @@ function generateTextbox()
 
 	for(var i = 1; i <= totalTestcases; i++)
 	{
-		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
-		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
+		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" id='+i+' class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
+		var j= i+"a";
+		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" id='+j+' class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
 	}
 }
+
+function getid(noOfTestCases,desc){
+	var inputs = [noOfTestCases];
+	var outputs = [noOfTestCases];
+	for(i=1;i<=noOfTestCases;i++)
+	{
+		inputs[i-1] = document.getElementById(i).value;
+		outputs[i-1] = document.getElementById(i+"a").value;
+	}
+	if (window.XMLHttpRequest) {
+		xmlhttp=new XMLHttpRequest();
+	}
+		xmlhttp.open("GET", "/addTestcases?noOfTestCases=" + noOfTestCases+ "&desc=" + desc+ "&inputs=" + inputs+ "&outputs=" + outputs);
+		xmlhttp.send();
+}
+
+
+

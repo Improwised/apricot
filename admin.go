@@ -11,7 +11,9 @@ import (
 	"encoding/json"
 	"os"
 	"time"
+	"strings"
 	"bytes"
+	"strconv"
 	// "reflect"
 )
 
@@ -60,6 +62,7 @@ type getAllQuestionsInfo struct {
 
 // display questions in view
 func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("**")
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
 	buffer.WriteString("select id, description, deleted, sequence from questions order by sequence")
@@ -135,7 +138,7 @@ func addQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
-	buffer.WriteString("select id, description, deleted from challenges order by id")
+	buffer.WriteString("select id, description, deleted from challenges")
 	rows3, _ := db.Query(buffer.String())
 
 	questionsInfo := []questionsInformation{}
@@ -191,16 +194,6 @@ func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func addChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("add")
-	description := r.FormValue("description")
-	fmt.Println(description)
-	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
-	stmt2.Query(description)
-	http.Redirect(w, r, "programmingtest", 301)
-}
-
-// get general information of users
 type GeneralInfo struct {
 	Id string
 	Name string
@@ -215,7 +208,7 @@ type GeneralInfo struct {
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	stmt1 := fmt.Sprintf("select id, name, email, contact, degree, college, yearOfCompletion, created, modified from candidates")
+	stmt1 := fmt.Sprintf("select id, name, email, contact, degree, college, yearOfCompletion, created, modified from candidates order by id desc")
 	rows1, _ := db.Query(stmt1)
 
 	UsersInfo := []GeneralInfo{}
@@ -228,18 +221,68 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, UsersInfo)
 }
 
+type ChallengeInfo struct {
+	Id int
+}
+
+//will add no of testcases into database...
+func testCasesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	description := r.URL.Query().Get("desc")
+
+	Testcases := r.URL.Query().Get("noOfTestCases")
+	noOfTestcases, _ := strconv.Atoi(Testcases)
+
+
+	input := r.URL.Query().Get("inputs")
+	output := r.URL.Query().Get("outputs")
+
+	splitInput := strings.Split(input, ",")
+	splitOutput := strings.Split(output, ",")
+
+	stmt4 := fmt.Sprintf("select MAX(id) from challenges")
+	rows1, _ := db.Query(stmt4)
+	ChallengeId := []ChallengeInfo{}
+	id := ChallengeInfo{}
+	for rows1.Next() {
+		rows1.Scan(&id.Id)
+		ChallengeId = append(ChallengeId, id)
+	}
+	Id := ChallengeId[0].Id
+
+	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
+	stmt2.Query(description)
+
+	for i:=0; i< noOfTestcases;i++ {
+		defaultcase := false
+		if(i == 0){
+			defaultcase = true
+		}
+		stmt3, _ := db.Prepare("insert into challenge_cases (challengeid, input, output, defaultcase, created) values($1,$2,$3,$4,NOW())")
+		stmt3.Query(Id+1,splitInput[i],splitOutput[i],defaultcase)
+	}
+	http.Redirect(w, r, "programmingtest", 301)
+}
+
+func addChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	http.Redirect(w, r, "programmingtest", 301)
+}
+
 func main() {
 	db = setupDB()
-	defer db.Close()
+	defer
+
 	goji.Handle("/questions", questionsHandler)
 	goji.Handle("/candidates", candidateHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
 	goji.Handle("/editquestion", editQuesionHandler)
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
 	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
+	goji.Handle("/addchallenge", addChallengeHandler)
+
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
-	goji.Handle("/addchallenge", addChallengeHandler)
+	goji.Handle("/addTestcases", testCasesHandler)
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
