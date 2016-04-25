@@ -57,7 +57,7 @@
                         <select name="language" class="language" >
                         </select>
                         <div class="">
-                          <textarea name="sourceCode" id="sourceCode" class="form-control" rows="20" cols="50" >{{range .GetSource}}{{.Answer}}{{end}}</textarea>
+                          <textarea required placeholder="Source Code " name="sourceCode" id="sourceCode" class="form-control" rows="20" cols="50" >{{range .GetSource}}{{.Answer}}{{end}}</textarea>
                         </div>
                         <br>
                         <div align="right">
@@ -68,6 +68,7 @@
                       </div>
                     </fieldset>
                       <div class="run-time full-width">
+                        <pre class="error-output" id="status"><code></code></pre>
                         <div class="field-label" >Input</div>
                         <pre class="error-output" id="input"><code></code></pre>
                         <div class="field-label">Your Output</div>

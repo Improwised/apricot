@@ -159,9 +159,21 @@ function getHrResponse(id) {
 		},
 	success: function (response) {
 		var elem = document.getElementById("compilemessage")
+		var elem2 = document.getElementById("status")
+		testcaseStatus = response[4]
 
 		$('#input').html(response[0]);
 		$('#expecteOutput').html(response[1]);
+
+		if(testcaseStatus == "0"){
+			elem2.style.color = "Red"
+			elem2.style.fontWeight = "900"
+			$('#status').html("Testcase-1 Failed...");
+		} else if(testcaseStatus == "1"){
+			elem2.style.color = "Green"
+			elem2.style.fontWeight = "900"
+			$('#status').html("Testcase-1 Passed...");
+		}
 
 		if(response[2] == ""){
 			elem.style.color = "Red"
@@ -179,7 +191,9 @@ function getHrResponse(id) {
 			elem.style.color = "Red"
 			$('#compilemessage').html(response[3]);
 		}
-		window.location="http://localhost:8000/thankYouPage";
+		if(id == "submitCode"){
+			window.location="http://localhost:8000/thankYouPage";
+		}
 	},
 	error: function (response) {
 		console.log("error");
@@ -212,7 +226,6 @@ function getLanguages() {
 
 			i += 1;
 		}
-		console.log(languages);
 	},
 	error: function (response) {
 	},

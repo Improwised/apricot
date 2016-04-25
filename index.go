@@ -20,6 +20,7 @@ import (
 	_"reflect"
 	"io/ioutil"
 	"strings"
+	"strconv"
 )
 
 type Configuration struct {
@@ -646,16 +647,13 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			clientResponse = append(clientResponse, HrInfo.Result.Stdout[0])
 		}
 		clientResponse = append(clientResponse, HrMesageToDisplay.Compilemessage)
-		//converting structure to JSON=======
-		bytes, err := json.Marshal(clientResponse)
+		//converting to JSON=======
+
 
 		if err != nil {
 			return
 		}
 		// =====================
-
-		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(bytes))
 
 		 //check for all the testcases from database..
 		var outputResponse []string
@@ -681,6 +679,10 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			}
 			status = append(status, count)
 		}
+		clientResponse = append(clientResponse,strconv.Itoa(status[0]))
+		bytes, err := json.Marshal(clientResponse)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(bytes))
 
 		// will store final response from api to database..
 		if id == "submitCode" {
@@ -719,11 +721,11 @@ func thankYouHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func main() {
 	db = setupDB()
 	defer db.Close()
-	goji.Handle("/index", indexHandler)
+	goji.Get("/index", indexHandler)
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
 	goji.Handle("/challenge", challengeHandler)
-	goji.Handle("/hrresponse", getHrResponse)
+	goji.Post("/hrresponse", getHrResponse)
 	goji.Handle("/confirmation", confirmationPage)
 	goji.Handle("/thankYouPage", thankYouHandler)
 	goji.Handle("/expired", expiredPage)
