@@ -237,6 +237,11 @@ type AllDetail struct {
 
 func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("key")
+
+	if(len(hash)!=40 || hash == ""){//chek whether hash modified by candidate..
+		http.Redirect(w, r, "/index", 302)
+	}
+
 	// ===============TODO check hash expired or not...===================
 	query, _ := db.Prepare("SELECT expired,status FROM sessions where hash = ($1)")
 	result, _ := query.Query(hash)
@@ -248,7 +253,6 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		mysession = append(mysession, info)
 		checkErr(err)
 	}
-
 	remainTime := mysession[0].expireDate.Sub(time.Now())
 	status := mysession[0].status
 	if remainTime.Seconds() < 0 || status != 1 {
@@ -332,8 +336,10 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 }
 
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	processFormData(w, r)
 	hash := r.FormValue("hash")
+
 	http.Redirect(w, r, "/challenge?key="+ hash, 302)
 }
 
@@ -358,8 +364,16 @@ type getHash struct {
 
 //save programme and no of attempts into database while compiling
 func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
 	// ===============TODO check hash expired or not...===================
 	hash := r.URL.Query().Get("key")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if(len(hash)!=40 || hash == ""){//chek whether hash modified by candidate..
+		http.Redirect(w, r, "/index", 302)
+	}
+
 	query, _ := db.Prepare("SELECT expired,status FROM sessions where hash = ($1)")
 	result, _ := query.Query(hash)
 
@@ -368,9 +382,9 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	for result.Next() {
 		err := result.Scan(&info.expireDate,&info.status)
 		mysession = append(mysession, info)
+
 		checkErr(err)
 	}
-
 	remainTime := mysession[0].expireDate.Sub(time.Now())
 	status := mysession[0].status
 	if remainTime.Seconds() < 0 || status != 1 {
@@ -523,6 +537,116 @@ type sessionInfo struct {
 	challenge int
 }
 
+type AllLanguages struct {
+	Languages struct {
+		Names struct {
+			C string
+			Cpp string
+			Java string
+			Csharp string
+			Php string
+			Ruby string
+			Python string
+			Perl string
+			Haskell string
+			Clojure string
+			Scala string
+			Bash string
+			Lua string
+			Erlang string
+			Javascript string
+			Go string
+			D string
+			Ocaml string
+			Pascal string
+			Sbcl string
+			Python3 string
+			Groovy string
+			Objectivec string
+			Fsharp string
+			Cobol string
+			Visualbasic string
+			Lolcode string
+			Smalltalk string
+			Tcl string
+			Whitespace string
+			Tsql string
+			Java8 string
+			Db2 string
+			Octave string
+			R string
+			Xquery string
+			Racket string
+			Rust string
+			Fortran string
+			Swift string
+			Oracle string
+			Mysql string
+		}
+		Codes struct {
+			C int
+			Cpp int
+			Java int
+			Python int
+			Perl int
+			Php int
+			Ruby int
+			Mysql int
+			Oracle int
+			Haskell int
+			Clojure int
+			Bash int
+			Scala int
+			Erlang int
+			Lua int
+			Javascript int
+			Go int
+			D int
+			Ocaml int
+			R int
+			Pascal int
+			Sbcl int
+			Python3 int
+			Groovy int
+			Objectivec int
+			Fsharp int
+			Cobol int
+			Visualbasic int
+			Lolcode int
+			Smalltalk int
+			Tcl int
+			Whitespace int
+			Tsql int
+			Java8 int
+			Db2 int
+			Octave int
+			Xquery int
+			Racket int
+			Rust int
+			Swift int
+			Fortran int
+		}
+	}
+}
+
+func languagesHandler(c web.C, w http.ResponseWriter, r *http.Request){
+		var buffer2 bytes.Buffer
+
+		buffer2.WriteString("format=json&wait=true")
+		req, _ := http.NewRequest("GET", "http://api.hackerrank.com/checker/languages.json", strings.NewReader(buffer2.String()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded; param=value")
+		client := http.Client{}
+		resp, _ := client.Do(req)
+		var strBody string
+		body, _ := ioutil.ReadAll(resp.Body)
+		strBody = string(body)
+		allLang := AllLanguages{}
+		json.Unmarshal([]byte(strBody), &allLang)
+
+		bytes, _ := json.Marshal(allLang)
+		w.Write([]byte(bytes))
+}
+
 type passHrResponse struct {
 	Compilemessage string
 	Stdout []string
@@ -647,14 +771,6 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			clientResponse = append(clientResponse, HrInfo.Result.Stdout[0])
 		}
 		clientResponse = append(clientResponse, HrMesageToDisplay.Compilemessage)
-		//converting to JSON=======
-
-
-		if err != nil {
-			return
-		}
-		// =====================
-
 		 //check for all the testcases from database..
 		var outputResponse []string
 		var length = len(outputDatabase)
@@ -680,7 +796,12 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			status = append(status, count)
 		}
 		clientResponse = append(clientResponse,strconv.Itoa(status[0]))
+		//converting to JSON=======
 		bytes, err := json.Marshal(clientResponse)
+		if err != nil {
+			return
+		}
+		// =====================
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(bytes))
 
@@ -721,11 +842,15 @@ func thankYouHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func main() {
 	db = setupDB()
 	defer db.Close()
+
 	goji.Get("/index", indexHandler)
+	goji.Handle("/hrapi", apihandler)
+	goji.Get("/", indexHandler)
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
 	goji.Handle("/challenge", challengeHandler)
 	goji.Post("/hrresponse", getHrResponse)
+	goji.Post("/getLanguages", languagesHandler)
 	goji.Handle("/confirmation", confirmationPage)
 	goji.Handle("/thankYouPage", thankYouHandler)
 	goji.Handle("/expired", expiredPage)

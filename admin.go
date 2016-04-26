@@ -62,7 +62,6 @@ type getAllQuestionsInfo struct {
 
 // display questions in view
 func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("**")
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
 	buffer.WriteString("select id, description, deleted, sequence from questions order by sequence")
@@ -80,8 +79,6 @@ func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		questionsInfo = append(questionsInfo, q)
 		checkErr(err)
 	}
-
-
 
 	getAllQuestionsInfo.QuestionsInfo = questionsInfo
 	t, _ := template.ParseFiles("./views/questions.html")
@@ -270,16 +267,16 @@ func addChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	db = setupDB()
-	defer
+	defer db.Close()
 
-	goji.Handle("/questions", questionsHandler)
+	goji.Handle("/", candidateHandler)
 	goji.Handle("/candidates", candidateHandler)
+	goji.Get("/questions", questionsHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
 	goji.Handle("/editquestion", editQuesionHandler)
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
 	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
 	goji.Handle("/addchallenge", addChallengeHandler)
-
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/addTestcases", testCasesHandler)
