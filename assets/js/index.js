@@ -129,7 +129,6 @@ function deleteChallenge(qId, element) {
 	xmlhttp.send();
 }
 
-
 function getHrResponse(id) {
 	var source = $('#sourceCode').val();
 	var language = $(".language").val();
@@ -146,7 +145,21 @@ function getHrResponse(id) {
 	xmlhttp=new XMLHttpRequest();
 	xmlhttp.open("POST", "/challenge", true);
 
+	var elem = document.getElementById("status")
+	elem.style.color = "Orange"
+	elem.style.fontWeight = "900"
+
+	$('#status').html(" ");
+
+	$('#status').html("Wait...");
+
+	$('#expecteOutput').html(" ");
+	$('#yourOutput').html(" ");
+	$('#compilemessage').html(" ");
+	$('#input').html(" ");
+
 	$.ajax({
+
 		url: "hrresponse",
 		type: 'post',
 		crossDomain : true,
@@ -161,6 +174,8 @@ function getHrResponse(id) {
 		var elem = document.getElementById("compilemessage")
 		var elem2 = document.getElementById("status")
 		testcaseStatus = response[4]
+
+		$('#status').html(" ");
 
 		$('#input').html(response[0]);
 		$('#expecteOutput').html(response[1]);
@@ -206,24 +221,21 @@ function getLanguages() {
 	var i = 0;
 	var languages = [];
 	$.ajax({
-		url: "http://api.hackerrank.com/checker/languages.json",
-		type: 'GET',
-	 // headers : { 'Access-Control-Allow-Origin': '*' },
-		crossDomain : true,
+		url: "getLanguages",
+		type: 'post',
 		contentType: "application/x-www-form-urlencoded",
-		data: {
-			api_key : "hackerrank|768030-708|2f417cf30f50ac1385dd76338a5e5c78c7dd87e9",
-			format : "json",
-		},
+		datatype: 'jsonp',
+
 	success: function (response) {
-		obj = response.languages.codes;
+		var obj1 = JSON.parse(response);
+		obj = obj1.Languages.Codes;
+
 		for (var key in obj) {
 			languages[i] = key;
 			$('.language').append($('<option>', {
 				value: obj[key],
 				text: key,
 			}));
-
 			i += 1;
 		}
 	},

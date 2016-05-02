@@ -39,13 +39,13 @@
                     <legend align="center">Programming Challenge</legend><br>
                       <div class="full-width">
                         <div class="field-label"><strong>Challenge: </strong>{{range .GetChallenge}}{{.Description}}{{end}}</div>
-                        
+
                         <!-- <label>Select your language : &nbsp</label> -->
                         <div class="row  pull-right" style="margin-right: 0;">
                           <select name="language" class="language" style="width: 200px;" data-placeholder= "Select Language">
                           </select>
                         </div>
-                        
+
                         <div class="">
                           <textarea required placeholder="Source Code" name="sourceCode" id="sourceCode" class="form-control" rows="20" cols="50" >{{range .GetSource}}{{.Answer}}{{end}}</textarea>
                         </div>
@@ -57,11 +57,13 @@
                         <br>
                       </div>
                     </fieldset>
+
                       <div class="run-time full-width">
+                        <pre class="error-output" id="status"><code></code></pre>
                         <div class="field-label" >Input</div>
                         <pre class="error-output" id="input"><code></code></pre>
                         <div class="field-label">Your Output</div>
-                        <pre class="error-output" id="status"><code></code></pre>
+                        <pre class="error-output" id="yourOutput"><code></code></pre>
                         <div class="field-label">Expected Output</div>
                         <pre class="error-output" id="expecteOutput"><code align="left"></code></pre>
                         <div class="field-label">Compiler Message</div>
