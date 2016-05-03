@@ -110,6 +110,8 @@ h3 {
   background-color: #e4a693;
 }
 
+
+
 /*#contact {
   margin-bottom: 100px;
 }*/
@@ -437,13 +439,13 @@ body,p,td {
 }
 
 p,li,span {
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1.6;
   color: #666;
 }
 
 textarea{
-  font-size:17px;
+  font-size:50px;
 }
 
 strong{
@@ -471,8 +473,14 @@ legend{
   margin-bottom: 0px !important;
 }
 
-
-
+div.one {
+    border: 1px solid red;
+    background-color: yellow;
+    padding-top: 50px;
+    padding-right: 30px;
+    padding-bottom: 50px;
+    padding-left: 80px;
+}
 @-webkit-keyframes animate-stripes {
     from {
         background-position: 0 0;
@@ -480,4 +488,13 @@ legend{
     to {
        background-position: -50px 0;
     }
+}
+
+.language > span {
+  width: 400px !important;
+}
+
+.form-group.required .control-label:after { 
+  content:"*";
+  color:red;
 }
