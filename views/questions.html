@@ -24,7 +24,7 @@
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-          <a class="navbar-brand" href="improwised.com">Improwised</a>
+          <a class="navbar-brand" href="http://www.improwised.com/">Improwised</a>
         </div>
         <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
         <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
@@ -112,7 +112,8 @@
                             <th>Questions</th>
                             <th width="2%">Sequence</th>
                             <th width="2%">EDIT</th>
-                            <th width="2%">REMOVE</th>
+                            <th width="2%">SHOW</th>
+                            <th width="2%">ACTION</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -123,10 +124,20 @@
                           <td>{{.Description}}</td>
                           <td>{{.Sequence}}</td>
                           <td><a href="/editquestion?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
-                           <td>{{if eq .Flag 1}}
-                          <img src="../assets/img/true.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                          <td>{{if eq .Flag 1}}
+                            <label class="control-label col-sm-2" for="">No</label>
+                          {{else}}                         
+                            <label class="control-label col-sm-2" for="">Yes</label>
+                          {{end}} 
+                          </td>
+                          <td>{{if eq .Flag 1}}
+                            <button type="button" class="btn btn-success" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                              <span class="glyphicon"></span> Show
+                            </button>
                           {{else}}
-                            <img src="../assets/img/false.png" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                            <button type="button" class="btn btn-danger" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                              <span class="glyphicon"></span> Hide
+                            </button>
                           {{end}}
                           </td>
                         </tr>

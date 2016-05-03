@@ -57,7 +57,7 @@
                   <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Challenge</button>
                 </li>
               </ol>
-              <!-- Modal -->
+              <!-- Add Challenge Modal -->
               <div class="modal fade" id="myModal" role="dialog">
                 <div class="modal-dialog">
                   <div class="modal-dialog modal-lg">
@@ -89,7 +89,49 @@
                   </div>
                 </div>
               </div>
-
+              <!-- Exit Challenge Modal -->
+              <!-- Add Testcases Modal -->
+              <div class="modal fade" id="testCaseModal" role="dialog">
+                <div class="modal-dialog">
+                  <div class="modal-dialog modal-lg">
+                   <!-- Modal content-->
+                    <div class="modal-content">
+                      <div class="modal-header">
+                       <button type="button" class="close" data-dismiss="modal">&times;</button>
+                       <h4 class="modal-title">Testcases</h4>
+                      </div>
+                      <div class="modal-body">
+                        <form class="form-horizontal" role="form" onsubmit="getid(document.getElementById('testcases').value,document.getElementById('description').value)" method="GET" action="./addchallenge" >
+                          <div class="form-group">
+                            <label class="control-label col-sm-2" for="description">Description:</label>
+                            <label class="control-label" for="description">Write a program for Hello World</label>
+                          </div>
+                          <div class="form-group">
+                            <label class="control-label col-sm-2" for="description">Input:</label>
+                            <div class="col-sm-10">
+                              <textarea class="form-control" name="testcases" id="testcases" rows="3" cols="20" value="" placeholder=""></textarea>
+                            </div>
+                            <br><br><br><br>
+                            <label class="control-label col-sm-2" for="description">Output:</label>
+                            <div class="col-sm-10">
+                              <textarea class="form-control" name="testcases" id="testcases" rows="3" cols="20" value="" placeholder=""></textarea>
+                            </div>
+                          </div>
+                          <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
+                            </div>
+                          </div>
+                        </form>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Exit Tescases Modal -->
             </div>
           </div>
           <!-- /.row -->
@@ -101,10 +143,12 @@
                     <table class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
-                            <th width="2%">Id</th>
-                            <th>Questions</th>
-                            <th width="2%">EDIT</th>
-                            <th width="2%">REMOVE</th>
+                          <th width="2%">Id</th>
+                          <th>Questions</th>
+                          <th width="2%">EDIT</th>
+                          <th width="2%">TESTCASES</th>
+                          <th width="2%">SHOW</th>
+                          <th width="2%">ACTION</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -114,10 +158,23 @@
                           <td>{{.Id}}</td>
                           <td>{{.Description}}</td>
                           <td><a href="/editchallenge?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
-                           <td>{{if eq .Flag 1}}
-                          <img src="../assets/img/true.png" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                          <td align="center">
+                            <button data-toggle="modal" data-target="#testCaseModal">ADD</button>
+                          </td>
+                          <td>{{if eq .Flag 1}}
+                            <label class="control-label col-sm-2" for="">No</label>
+                          {{else}}                         
+                            <label class="control-label col-sm-2" for="">Yes</label>
+                          {{end}} 
+                          </td>
+                          <td>{{if eq .Flag 1}}
+                            <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                              <span class="glyphicon"></span> Show
+                            </button>
                           {{else}}
-                            <img src="../assets/img/false.png" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                            <button type="button" class="btn btn-danger" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                              <span class="glyphicon"></span> Hide
+                            </button>
                           {{end}}
                           </td>
                         </tr>
