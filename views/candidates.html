@@ -67,7 +67,7 @@
                           <th style="width:2px;"><a href="/candidates">College</a></th>
                           <th style="width:2px;"><a href="/candidates">Year Of Completion</a></th>
                            <th style="width:2px;"><a href="/candidates">No Of Questions Attempted</a></th>
-                          <th style="width:2px;"><a href="/candidates">No. of challenges attempted</a></th>
+                          <th style="width:2px;"><a href="/candidates">No. of attempts for chellange</a></th>
                           <th style="width:2px;"><a href="/candidates">Modified</a></th>
                         </tr>
                       </thead>
@@ -81,9 +81,9 @@
                           <td>{{.Degree}}</td>
                           <td>{{.College}}</td>
                           <td>{{.YearOfCompletion}}</td>
-                          <td></td>
-                          <td></td>
-                          <td>{{.Modified}}</td>
+                          <td>{{.QuestionsAttended}}</td>
+                          <td>{{.ChallengeAttempts}}</td>
+                          <td>{{.DateOnly}}</td>
                         </tr>
                         {{end}}
                         {{end}}

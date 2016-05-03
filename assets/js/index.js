@@ -147,6 +147,7 @@ function getHrResponse(id) {
 
 	var elem = document.getElementById("status")
 	elem.style.color = "Orange"
+	elem.style.backgroundColor = "#FCF5D8"
 	elem.style.fontWeight = "900"
 
 	$('#status').html(" ");
@@ -244,32 +245,23 @@ function getLanguages() {
 	});
 }
 
-function generateTextbox()
-{
-	var totalTestcases = document.getElementById("testcases").value;
-	var createTextbox = document.getElementById("createTextbox");
-
-	for(var i = 1; i <= totalTestcases; i++)
-	{
-		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Input for testcase' +i+ ':</label>' +' <input type="text" id='+i+' class= "form-control" style="width: 400px; height: 30px;" name= input> <br> \n';
-		var j= i+"a";
-		createTextbox.innerHTML  = createTextbox.innerHTML  + '<label class="control-label col-sm-2" for="sequence">Output for testcase' +i+ ':</label>'+ ' <input type="text" id='+j+' class= "form-control" style="width: 400px; height: 30px;" name= output> <br> \n';
+function getid(){
+	var elem = document.getElementById("description").value
+		if (window.XMLHttpRequest) {
+		xmlhttp=new XMLHttpRequest();
 	}
+		xmlhttp.open("GET", "/newChallenge?&desc=" + elem + "");
+		xmlhttp.send();
 }
 
-function getid(noOfTestCases,desc){
-	var inputs = [noOfTestCases];
-	var outputs = [noOfTestCases];
-	for(i=1;i<=noOfTestCases;i++)
-	{
-		inputs[i-1] = document.getElementById(i).value;
-		outputs[i-1] = document.getElementById(i+"a").value;
-	}
+function saveTaseCases(){
+	var input = document.getElementById("input").value
+	var output = document.getElementById("output").value
 	if (window.XMLHttpRequest) {
 		xmlhttp=new XMLHttpRequest();
 	}
-		xmlhttp.open("GET", "/addTestcases?noOfTestCases=" + noOfTestCases+ "&desc=" + desc+ "&inputs=" + inputs+ "&outputs=" + outputs);
-		xmlhttp.send();
+	xmlhttp.open("GET", "/testcase?&input=" + input + "& output=" + output + "");
+	xmlhttp.send();
 }
 
 

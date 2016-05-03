@@ -13,8 +13,7 @@ import (
 	"time"
 	"strings"
 	"bytes"
-	"strconv"
-	// "reflect"
+		// "reflect"
 )
 
 type Configuration struct {
@@ -201,19 +200,37 @@ type GeneralInfo struct {
 	Email string
 	Created time.Time
 	Modified time.Time
+	ChallengeAttempts string
+	DateOnly string
+	QuestionsAttended string
 }
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	stmt1 := fmt.Sprintf("select id, name, email, contact, degree, college, yearOfCompletion, created, modified from candidates order by id desc")
+	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id")
 	rows1, _ := db.Query(stmt1)
 
 	UsersInfo := []GeneralInfo{}
 	user := GeneralInfo{}
 	for rows1.Next() {
-		rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion ,&user.Created, &user.Modified)
+
+		rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Degree, &user.College, &user.YearOfCompletion, &user.Modified, &user.ChallengeAttempts)
+
+		//extract only date from timestamp========
+	 	str :=&user.Modified
+		str1 := str.String()
+		s := strings.Split(str1," ")
+		user.DateOnly = s[0]
+		//================================
+
+		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) < 1 AND  candidateid="+user.Id)//+ user.Id)
+		rows2, _ := db.Query(stmt2)
+		for rows2.Next() {
+			rows2.Scan(&user.QuestionsAttended)
+		}
 		UsersInfo = append(UsersInfo, user)
 	}
+	fmt.Println(UsersInfo)
 	t, _ := template.ParseFiles("./views/candidates.html")
 	t.Execute(w, UsersInfo)
 }
@@ -222,45 +239,21 @@ type ChallengeInfo struct {
 	Id int
 }
 
-//will add no of testcases into database...
-func testCasesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func newChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	description := r.URL.Query().Get("desc")
-
-	Testcases := r.URL.Query().Get("noOfTestCases")
-	noOfTestcases, _ := strconv.Atoi(Testcases)
-
-
-	input := r.URL.Query().Get("inputs")
-	output := r.URL.Query().Get("outputs")
-
-	splitInput := strings.Split(input, ",")
-	splitOutput := strings.Split(output, ",")
-
-	stmt4 := fmt.Sprintf("select MAX(id) from challenges")
-	rows1, _ := db.Query(stmt4)
-	ChallengeId := []ChallengeInfo{}
-	id := ChallengeInfo{}
-	for rows1.Next() {
-		rows1.Scan(&id.Id)
-		ChallengeId = append(ChallengeId, id)
-	}
-	Id := ChallengeId[0].Id
 
 	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
 	stmt2.Query(description)
 
-	for i:=0; i< noOfTestcases;i++ {
-		defaultcase := false
-		if(i == 0){
-			defaultcase = true
-		}
-		stmt3, _ := db.Prepare("insert into challenge_cases (challengeid, input, output, defaultcase, created) values($1,$2,$3,$4,NOW())")
-		stmt3.Query(Id+1,splitInput[i],splitOutput[i],defaultcase)
-	}
 	http.Redirect(w, r, "programmingtest", 301)
 }
 
 func addChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	http.Redirect(w, r, "programmingtest", 301)
+}
+
+func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "programmingtest", 301)
 }
@@ -277,9 +270,10 @@ func main() {
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
 	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
 	goji.Handle("/addchallenge", addChallengeHandler)
+	goji.get("/testcase", testcaseHandler)
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
-	goji.Handle("/addTestcases", testCasesHandler)
+	goji.Handle("/newChallenge", newChallengeHandler)
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
