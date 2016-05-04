@@ -257,6 +257,33 @@ func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "programmingtest", 301)
 }
+var challengeId string
+func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	if r.FormValue("qId") != "" {
+		input := r.FormValue("input")
+		output := r.FormValue("output")
+
+		stmt1, _ := db.Prepare("insert into challenge_cases(challengeid, input, output, created) values ($1, $2, $3,NOW());")
+		stmt1.Query(challengeId, input, output)
+		http.Redirect(w, r, "programmingtest", 301)
+	} else {
+		qId := r.URL.Query().Get("qid")
+		challengeId = qId
+
+		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
+		rows1, _ := stmt1.Query(qId)
+		questions := []questionsInformation{}
+		q := questionsInformation{}
+		for rows1.Next() {
+			err := rows1.Scan(&q.Description)
+			questions = append(questions, q)
+			checkErr(err)
+		}
+		t, _ := template.ParseFiles("./views/addTestCases.html")
+		t.Execute(w, questions)
+	}
+}
 
 func main() {
 	db = setupDB()
@@ -270,7 +297,8 @@ func main() {
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
 	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
 	goji.Handle("/addchallenge", addChallengeHandler)
-	goji.get("/testcase", testcaseHandler)
+	goji.Get("/testcase", testcaseHandler)
+	goji.Handle("/addTestCases", addTestCase)
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/newChallenge", newChallengeHandler)

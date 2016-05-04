@@ -54,7 +54,7 @@
               <ol class="breadcrumb">
                 <li class="active">
                   <!-- Trigger the modal with a button -->
-                  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Challenge</button>
+                  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" onclick="id()" data-target="#myModal">Add Challenge</button>
                 </li>
               </ol>
               <!-- Add Challenge Modal -->
@@ -68,7 +68,7 @@
                        <h4 class="modal-title">Challenge</h4>
                       </div>
                       <div class="modal-body">
-                        <form class="form-horizontal" role="form" onsubmit="getid(document.getElementById('testcases').value,document.getElementById('description').value)" method="GET" action="./addchallenge" >
+                        <form class="form-horizontal" role="form" onsubmit="getid();" method="GET" action="./addchallenge" >
                           <div class="form-group">
                             <label class="control-label col-sm-2" for="description">Description:</label>
                             <div class="col-sm-10">
@@ -101,7 +101,7 @@
                        <h4 class="modal-title">Testcases</h4>
                       </div>
                       <div class="modal-body">
-                        <form class="form-horizontal" role="form" onsubmit="getid(document.getElementById('testcases').value,document.getElementById('description').value)" method="GET" action="./addchallenge" >
+                        <form class="form-horizontal" role="form" method="GET" action="./addchallenge" >
                           <div class="form-group">
                             <label class="control-label col-sm-2" for="description">Description:</label>
                             <label class="control-label" for="description">Write a program for Hello World</label>
@@ -109,17 +109,17 @@
                           <div class="form-group">
                             <label class="control-label col-sm-2" for="description">Input:</label>
                             <div class="col-sm-10">
-                              <textarea class="form-control" name="testcases" id="testcases" rows="3" cols="20" value="" placeholder=""></textarea>
+                              <textarea class="form-control" name="testcases" id="input" rows="3" cols="20" value="" placeholder=""></textarea>
                             </div>
                             <br><br><br><br>
                             <label class="control-label col-sm-2" for="description">Output:</label>
                             <div class="col-sm-10">
-                              <textarea class="form-control" name="testcases" id="testcases" rows="3" cols="20" value="" placeholder=""></textarea>
+                              <textarea class="form-control" name="testcases" id="output" rows="3" cols="20" value="" placeholder=""></textarea>
                             </div>
                           </div>
                           <div class="form-group">
                             <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
+                            <input type="submit" class="btn btn-default"  name = "submit" onclick="saveTaseCases();" value="Submit">
                             </div>
                           </div>
                         </form>
@@ -159,13 +159,13 @@
                           <td>{{.Description}}</td>
                           <td><a href="/editchallenge?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
                           <td align="center">
-                            <button data-toggle="modal" data-target="#testCaseModal">ADD</button>
+                            <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button data-toggle="modal" data-target="#testCaseModal">ADD</button></a>
                           </td>
                           <td>{{if eq .Flag 1}}
                             <label class="control-label col-sm-2" for="">No</label>
-                          {{else}}                         
+                          {{else}}
                             <label class="control-label col-sm-2" for="">Yes</label>
-                          {{end}} 
+                          {{end}}
                           </td>
                           <td>{{if eq .Flag 1}}
                             <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
