@@ -129,6 +129,7 @@ type Questions struct {
 
 func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	email := r.URL.Query().Get("email")
+
 	//Check whether email empty or not
 	if email == "" {
 		t, _ := template.ParseFiles("./views/index.html")
@@ -143,19 +144,65 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			err := rows.Scan(&info.Id)
 			candidateid = append(candidateid, info)
 			checkErr(err)
-			flag = 1
+			flag = 3
 		}
-		//If candidate already registread before
+
+		//check If candidate already registread before and link has been expired....
+		if(flag == 3) {
+			stmt1, _ := db.Prepare("SELECT status FROM sessions WHERE candidateid = $1 AND id = (select MAX(id) from sessions where candidateid=$2)")
+			rows1, _ := stmt1.Query(candidateid[0].Id, candidateid[0].Id)
+			for rows1.Next() {
+				status := []sessionInfo{}
+				myinfo := sessionInfo{}
+				err := rows1.Scan(&myinfo.status)
+				checkErr(err)
+
+				status = append(status, myinfo)
+				fmt.Println("-->",status[0].status)
+				if(status[0].status == 0){
+					flag = 2
+
+					hashGenerator() // will generate unique hash...
+
+					//===== will return random challenge among no of challenges =========
+					challengeNo := randomChallengeGenerator()
+					//======================================================================
+					stmt3, _ := db.Prepare("insert into questions_answers (candidateId, questionsId, answer, created) values ($1, $2, $3, NOW())")
+					rows4, _ := db.Query("select id from questions where deleted IS NULL")
+					questionInfo := Questions{}
+					for rows4.Next() {
+						rows4.Scan(&questionInfo.Qid)
+						stmt3.Query(candidateid[0].Id, questionInfo.Qid, "")
+					}
+					//=========counting time for 7 days
+					now := time.Now()
+					sevenDay := time.Hour * 24 * 7
+					time := now.Add(sevenDay)
+					//=======
+					stmt4, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created, expired, challengeId, status) VALUES($1, $2, NOW(), $3, $4, $5)")
+					stmt4.Exec(hash, candidateid[0].Id, time, challengeNo, 1)
+					mail(hash,email)
+				} else {
+
+					flag = 1
+				}
+
+			}
+		}
+
+		//If candidate already registread before and still active....
 		if flag == 1 {
 			query, _ := db.Prepare("SELECT candidateid, hash, created, expired, challengeId FROM sessions WHERE candidateid = (select id from candidates where email = ($1)) AND status = 1")
 			row2,_ := query.Query(email)
 			mysession := []sessionInfo{}
 			info := sessionInfo{}
+
 			for row2.Next() {
 				err := row2.Scan(&info.candidateid, &info.hash, &info.entryDate, &info.expireDate, &info.challenge)
 				mysession = append(mysession, info)
 				checkErr(err)
 			}
+			fmt.Println("flag is*:",flag)
 			//check for hash expired or not...
 			remainTime := mysession[0].expireDate.Sub(time.Now())
 
@@ -652,6 +699,13 @@ type passHrResponse struct {
 	Stdout []string
 }
 
+func CompareString(a, b string) int {
+	if a == b {
+		return 0
+	}
+	return +1
+}
+
 func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 
 	source := r.FormValue("source")
@@ -788,9 +842,12 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 		for i := 0; i < length; i++ {
 			outputDatabase[i] = strings.TrimSpace(outputDatabase[i]);
 			outputResponse[i] = strings.TrimSpace(outputResponse[i]);
-			if(strings.EqualFold(outputDatabase[i], outputResponse[i])){
+			//
+			if(CompareString(outputDatabase[i], outputResponse[i]) == 0){
+				fmt.Println("equal")
 				count = 1
 			} else{
+				fmt.Println("Not Equal")
 				count = 0
 			}
 			status = append(status, count)
@@ -812,7 +869,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			query4.Exec(sessionid,testcases[0],outputResponse[0],source,status[0])
 			// =========================================
 
-			//will store all the test cases in databse for a source code======================
+			//will store all the test cases iƒn databse for a source code======================
 			for i:=1;i<length;i++{
 				query5, _ := db.Prepare("insert into challenge_attempts(sessionid,input,output,status) values($1,$2,$3,$4)")
 				query5.Exec(sessionid,testcases[i],outputResponse[i],status[i])
