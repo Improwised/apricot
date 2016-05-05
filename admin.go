@@ -207,7 +207,7 @@ type GeneralInfo struct {
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id")
+	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id order by c.id desc")
 	rows1, _ := db.Query(stmt1)
 
 	UsersInfo := []GeneralInfo{}
@@ -230,7 +230,6 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 		UsersInfo = append(UsersInfo, user)
 	}
-	fmt.Println(UsersInfo)
 	t, _ := template.ParseFiles("./views/candidates.html")
 	t.Execute(w, UsersInfo)
 }
@@ -257,6 +256,25 @@ func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	http.Redirect(w, r, "programmingtest", 301)
 }
+
+func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	t, _ := template.ParseFiles("./views/personalInformation.html")
+	t.Execute(w, t)
+}
+
+func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	t, _ := template.ParseFiles("./views/questionDetails.html")
+	t.Execute(w, t)
+}
+
+func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	t, _ := template.ParseFiles("./views/challengeDetails.html")
+	t.Execute(w, t)
+}
+
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 
@@ -296,6 +314,9 @@ func main() {
 	goji.Handle("/editquestion", editQuesionHandler)
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
 	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
+	goji.Handle("/personalInformation", personalInformationHandler)
+	goji.Handle("/questionDetails", questionDetailsHandler)
+	goji.Handle("/challengeDetails", challengeDetailsHandlers)
 	goji.Handle("/addchallenge", addChallengeHandler)
 	goji.Get("/testcase", testcaseHandler)
 	goji.Handle("/addTestCases", addTestCase)

@@ -90,48 +90,6 @@
                 </div>
               </div>
               <!-- Exit Challenge Modal -->
-              <!-- Add Testcases Modal -->
-              <div class="modal fade" id="testCaseModal" role="dialog">
-                <div class="modal-dialog">
-                  <div class="modal-dialog modal-lg">
-                   <!-- Modal content-->
-                    <div class="modal-content">
-                      <div class="modal-header">
-                       <button type="button" class="close" data-dismiss="modal">&times;</button>
-                       <h4 class="modal-title">Testcases</h4>
-                      </div>
-                      <div class="modal-body">
-                        <form class="form-horizontal" role="form" method="GET" action="./addchallenge" >
-                          <div class="form-group">
-                            <label class="control-label col-sm-2" for="description">Description:</label>
-                            <label class="control-label" for="description">Write a program for Hello World</label>
-                          </div>
-                          <div class="form-group">
-                            <label class="control-label col-sm-2" for="description">Input:</label>
-                            <div class="col-sm-10">
-                              <textarea class="form-control" name="testcases" id="input" rows="3" cols="20" value="" placeholder=""></textarea>
-                            </div>
-                            <br><br><br><br>
-                            <label class="control-label col-sm-2" for="description">Output:</label>
-                            <div class="col-sm-10">
-                              <textarea class="form-control" name="testcases" id="output" rows="3" cols="20" value="" placeholder=""></textarea>
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-default"  name = "submit" onclick="saveTaseCases();" value="Submit">
-                            </div>
-                          </div>
-                        </form>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- Exit Tescases Modal -->
             </div>
           </div>
           <!-- /.row -->
@@ -159,7 +117,7 @@
                           <td>{{.Description}}</td>
                           <td><a href="/editchallenge?qid={{.Id}}" id = "{{.Id}}"><img src="../assets/img/edit.png"></a></td>
                           <td align="center">
-                            <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button data-toggle="modal" data-target="#testCaseModal">ADD</button></a>
+                            <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button>ADD</button></a>
                           </td>
                           <td>{{if eq .Flag 1}}
                             <label class="control-label col-sm-2" for="">No</label>
@@ -179,7 +137,7 @@
                           </td>
                         </tr>
                         {{end}}
-                       <!--  {{end}} -->
+                        <!--  {{end}} -->
                       </tbody>
                     </table>
                   </div>
