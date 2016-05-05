@@ -66,56 +66,60 @@
                             <li><a data-toggle="tab" href="questionDetails">Questions Details</a></li>
                             <li><a data-toggle="tab" href="challengeDetails">Challenge Details</a></li>
                           </ul>
-                          <!--Personal Information panel --> 
+                          <!--Personal Information panel -->
+                          {{with .}}
+                          {{range .}}
                           <div class="tab-content">
                             <div id="home" class="tab-pane fade in active">
                               <h3></h3>
                               <br>
                                <div class="form-group required">
-                                <label class="control-label col-sm-3" for="name">Name</label>
+                                <label class="control-label col-sm-3" for="name">Name : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="name" id="name" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="name" id="name" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Name}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="contact">Contact</label>
+                                <label class="control-label col-sm-3" for="contact">Contact : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Contact}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="degree">Degree</label>
+                                <label class="control-label col-sm-3" for="degree">Degree : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="Degree" id="Degree" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="Degree" id="Degree" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Degree}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="college">College</label>
+                                <label class="control-label col-sm-3" for="college">College : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="College" id="College" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="College" id="College" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.College}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="yearOfPassing">Year Of Passing</label>
+                                <label class="control-label col-sm-3" for="yearOfPassing">Year Of Passing : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="yearOfPassing" id="yearOfPassing" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="yearOfPassing" id="yearOfPassing" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.YearOfCompletion}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="questionsAttempted">Number of Questions Attempted</label>
+                                <label class="control-label col-sm-3" for="questionsAttempted">Number of Questions Attempted : </label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="questionsAttempted" id="questionsAttempted" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="questionsAttempted" id="questionsAttempted" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.QuestionsAttended}}</label>
                                 </div>
                               </div>
                               <div class="form-group required">
-                                <label class="control-label col-sm-3" for="challengesAttempted">Number of times challenges attempted</label>
+                                <label class="control-label col-sm-3" for="challengesAttempted">Number of times challenges attempted:</label>
                                 <div class="col-sm-8">
-                                  <label class="control-label" name="challengesAttempted" id="challengesAttempted" style="width: 900px; height: 30px; text-align: left; font-weight: normal"></label>
+                                  <label class="control-label" name="challengesAttempted" id="challengesAttempted" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.ChallengeAttempts}}</label>
                                 </div>
                               </div>
                             </div>
-                          </div>    
-                          <!-- /Personal Information panel -->                        
+                          </div>
+                          {{end}}
+                          {{end}}
+                          <!-- /Personal Information panel -->
                         </div>
                     </fieldset>
                   </form>

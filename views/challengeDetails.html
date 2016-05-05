@@ -67,26 +67,27 @@
                             <li class="active"><a data-toggle="tab" href="challengeDetails">Challenge Details</a></li>
                           </ul>
                           <br><br>
-                          <div class="tab-content">
+                          {{with .}}
+                            {{range .GetChallenge}}
+                              <div class="tab-content">
+                                <div id="menu2" class="tab-pane fade in active">
+                                  <div class="full-width">
+                                    <div class="field-label"><strong>Challenge :     {{ .Challenge }}</strong>
+                                    <br><br>
+                           {{ end }}
+                            {{ end }}
 
-                            <div id="menu2" class="tab-pane fade in active">
-
-                              <div class="full-width">
-                                <div class="field-label"><strong>Challenge: </strong>
-                                  <br><br><br>
-                                  <div class="form-group">
-                                    <label class="control-label col-sm-2" for="attempts">First Attempt</label>
-                                    <textarea name="attempts" id="attempts" class="form-control" rows="5" cols="50" style="width: 50%;" readonly="readonly"></textarea>
-                                  </div>
-                                  <div class="form-group">
-                                    <label class="control-label col-sm-2" for="attempts">Second Attempt</label>
-                                    <textarea name="attempts" id="attempts" class="form-control" rows="5" cols="50" style="width: 50%;" readonly="readonly"></textarea>
-                                  </div>
-                                </div>  
-                              </div>  
-
+                          {{with .}}
+                            {{range .GetAnswers}}
+                              <div class="form-group">
+                                <label class="control-label col-sm-2" for="attempts">  </label>
+                                <textarea name="attempts" id="attempts" class="form-control" rows="5" cols="50" style="width: 50%;" readonly="readonly">{{ .Answer }}</textarea>
+                              </div>
+                          {{ end }}
+                            {{ end }}
+                                </div>
+                              </div>
                             </div>
-                          </div>
                           <br><br><br>
                         </div>
                     </fieldset>

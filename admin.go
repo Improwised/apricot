@@ -257,22 +257,90 @@ func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "programmingtest", 301)
 }
 
+var id string
 func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
+	id = r.FormValue("id")
+
+	QuestionsAttended := r.FormValue("queAttempt")
+	ChallengeAttempts := r.FormValue("challengeAttmpt")
+
+	stmt2 := fmt.Sprintf("SELECT name, email, contact, degree, college, yearofcompletion from candidates where id ="+id)
+	rows3, _ := db.Query(stmt2)
+
+	UsersInfo := []GeneralInfo{}
+	user := GeneralInfo{}
+
+	for rows3.Next() {
+		rows3.Scan(&user.Name, &user.Email, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion)
+		user.ChallengeAttempts = ChallengeAttempts
+		user.QuestionsAttended = QuestionsAttended
+		UsersInfo = append(UsersInfo, user)
+	}
 	t, _ := template.ParseFiles("./views/personalInformation.html")
-	t.Execute(w, t)
+	t.Execute(w, UsersInfo)
+}
+
+type GetQuestions struct {
+	Questions string
+	Id string
+	Ans  string
 }
 
 func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
+	rows, _ := db.Query("SELECT questions.description,questions_answers.answer FROM questions INNER JOIN questions_answers ON questions.id=questions_answers.questionsid where candidateid = "+ id +" ORDER BY questions.sequence")
+	questionsInfo := []GetQuestions{}
+	qinfo := GetQuestions{}
+	for rows.Next() {
+		err := rows.Scan(&qinfo.Questions, &qinfo.Ans)
+		questionsInfo = append(questionsInfo, qinfo)
+		checkErr(err)
+	}
 	t, _ := template.ParseFiles("./views/questionDetails.html")
-	t.Execute(w, t)
+	t.Execute(w, questionsInfo)
+}
+
+
+type GetChallenge struct {
+	Challenge string
+}
+
+type GetAnswers struct {
+	Answer string
+}
+
+type AllDetail struct {
+	GetChallenge []GetChallenge
+	GetAnswers []GetAnswers
 }
 
 func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 
+	stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
+	rows1, _ := stmt1.Query(id)
+	challenge := []GetChallenge{}
+	q := GetChallenge{}
+	for rows1.Next() {
+		err := rows1.Scan(&q.Challenge)
+		challenge = append(challenge, q)
+		checkErr(err)
+	}
+	stmt2, _ := db.Prepare("select answer from challenge_answers where sessionid = (select id from sessions where candidateid=($1)) order by attempts")
+	rows2, _ := stmt2.Query(id)
+	answer := []GetAnswers{}
+	A := GetAnswers{}
+	for rows2.Next() {
+		err := rows2.Scan(&A.Answer)
+		answer = append(answer, A)
+		checkErr(err)
+	}
+	allDetails := AllDetail{}
+	allDetails.GetChallenge = challenge
+	allDetails.GetAnswers = answer
+
 	t, _ := template.ParseFiles("./views/challengeDetails.html")
-	t.Execute(w, t)
+	t.Execute(w, allDetails)
 }
 
 var challengeId string

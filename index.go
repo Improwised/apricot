@@ -15,7 +15,6 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
-	_"github.com/icza/session"
 	"gopkg.in/gomail.v2"
 	_"reflect"
 	"io/ioutil"
@@ -158,7 +157,6 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 				checkErr(err)
 
 				status = append(status, myinfo)
-				fmt.Println("-->",status[0].status)
 				if(status[0].status == 0){
 					flag = 2
 
@@ -202,7 +200,6 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 				mysession = append(mysession, info)
 				checkErr(err)
 			}
-			fmt.Println("flag is*:",flag)
 			//check for hash expired or not...
 			remainTime := mysession[0].expireDate.Sub(time.Now())
 
@@ -844,10 +841,8 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			outputResponse[i] = strings.TrimSpace(outputResponse[i]);
 			//
 			if(CompareString(outputDatabase[i], outputResponse[i]) == 0){
-				fmt.Println("equal")
 				count = 1
 			} else{
-				fmt.Println("Not Equal")
 				count = 0
 			}
 			status = append(status, count)
