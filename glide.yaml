@@ -4,3 +4,11 @@ import:
 - package: github.com/Masterminds/cookoo
 - package: github.com/lib/pq
 - package: github.com/DavidHuie/gomigrate
+- package: github.com/gorilla/mux
+- package: github.com/gorilla/securecookie
+- package: github.com/gorilla/sessions
+- package: github.com/codegangsta/negroni
+- package: github.com/guregu/null
+- package: github.com/gocql/gocql
+- package: github.com/rs/cors
+- package: github.com/ajaxorg/ace

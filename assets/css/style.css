@@ -32,6 +32,12 @@ h2 {
 h3 {
   color: #888;
 }
+ #editor {
+        /*position: absolute;*/
+        width: 100%;
+        height: 600px;
+    }
+
 
 #topBar {
   height: 10px;
@@ -494,7 +500,21 @@ div.one {
   width: 400px !important;
 }
 
-.form-group.required .control-label:after { 
+.form-group.required .control-label:after {
   content:"*";
   color:red;
 }
+
+.clearfix:after {
+     visibility: hidden;
+     display: block;
+     font-size: 0;
+     content: " ";
+     clear: both;
+     height: 0;
+     }
+.clearfix { display: inline-block; }
+/* start commented backslash hack \*/
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/* close commented backslash hack */

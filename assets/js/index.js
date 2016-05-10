@@ -116,13 +116,14 @@ function deleteChallenge(qId, element) {
 		status = "no"
 		element.src ="../assets/img/true.png";
 		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
-
+		element.src="../assets/img/false.png";
 		flag = 0;
 	}
 	else if (flag == 0) {
 		status = "yes"
 		element.src="../assets/img/false.png";
 		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
+		element.src ="../assets/img/true.png";
 		flag = 1;
 
 	}
@@ -130,7 +131,7 @@ function deleteChallenge(qId, element) {
 }
 
 function getHrResponse(id) {
-	var source = $('#sourceCode').val();
+	var source = editor.getValue();
 	var language = $(".language").val();
 	url = window.location.search.substring(1);
 	var hash;
