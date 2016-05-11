@@ -223,7 +223,7 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		user.DateOnly = s[0]
 		//================================
 
-		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) < 1 AND  candidateid="+user.Id)//+ user.Id)
+		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) > 0 AND  candidateid="+user.Id)//+ user.Id)
 		rows2, _ := db.Query(stmt2)
 		for rows2.Next() {
 			rows2.Scan(&user.QuestionsAttended)

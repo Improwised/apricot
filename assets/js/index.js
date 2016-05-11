@@ -265,5 +265,44 @@ function saveTaseCases(){
 	xmlhttp.send();
 }
 
+//will set behaviour of editor according to selected language...
+$(document).ready(function() {
+	$( ".language" ).change(function() {
 
+		var lang = $('#languages :selected').text();
+		var aceLang;
 
+		if(lang === "C" ||lang === "Cpp" || lang === "Ruby" || lang === "Oracle" || lang === "Go" || lang === "Python3" || lang === "Visualbasic" || lang === "Smalltalk" || lang === "Java8" || lang === "Db2" ){
+
+			if(lang === "C" || lang === "Cpp")	aceLang = "c_cpp"
+			if(lang === "Oracle" ) aceLang = "sql"
+			if(lang === "Go" ) aceLang = "golang"
+			if(lang === "Ruby" ) aceLang = "html_ruby"
+			if(lang === "Python3" ) aceLang = "python"
+			if(lang === "Visualbasic" ) aceLang = "vbscript"
+			if(lang === "Smalltalk" ) aceLang = "smarty"
+			if(lang === "Java8" ) aceLang = "javascript"
+			if(lang === "Db2" ) aceLang = "sqlserver"
+
+		}
+		else {
+			 aceLang = lang.toLowerCase();
+		}
+		var src = '//ajaxorg.github.io/ace-builds/src/mode-';
+		src += aceLang;
+
+		var s = document.createElement("script");
+
+		s.type = "text/javascript";
+		s.src = '//ajaxorg.github.io/ace-builds/src/mode-'+ aceLang +'.js';
+	 	$("head").append(s);
+
+		var editor = ace.edit("editor");
+		var langMode = ace.require("ace/mode/"+ aceLang).Mode;
+		editor.getSession().setMode(new langMode());
+
+		//will set the theme of editor...
+		editor.setTheme("ace/theme/merbivore");
+		document.getElementById('editor').style.fontSize='16px';
+	});
+});
