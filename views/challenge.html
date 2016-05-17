@@ -41,7 +41,17 @@
                       <legend align="center">Programming Challenge</legend>
                       <br>
                       <div class="full-width">
-                        <div class="field-label"><strong>Challenge: </strong>{{range .GetChallenge}}{{.Description}}{{end}}</div>
+                        <div class="field-label"><strong>Challenge:</strong></div>
+
+                        <div class="container-fluid">
+                          <section class="row">
+                            <textarea class="col-md-6 full-height" id="pad" style="font-size: 15px; display:none;">{{range .GetChallenge}}{{.Description}}{{end}}</textarea>
+                            <div class="col-md-6 full-height" id="markdown"></div>
+                          </section>
+ 
+                          <script src="https://cdn.rawgit.com/showdownjs/showdown/1.0.2/dist/showdown.min.js"></script>
+                          <script src="script.js"></script>
+                        </div>
 
                         <!-- <label>Select your language : &nbsp</label> -->
                         <div class="row  pull-right" style="margin-right: 0;">

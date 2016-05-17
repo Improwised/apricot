@@ -353,11 +353,11 @@ function searchCandidates(value){
 	});
 }
 
-// function showDiv1() {
-//   var my_disply = document.getElementById('pad').style.display;
-//   if(my_disply == "block")
-//     document.getElementById('pad').style.display = "none";
-//   else
-//     document.getElementById('pad').style.display = "block";
-// }
+function showDiv1() {
+  var my_disply = document.getElementById('pad').style.display;
+  if(my_disply == "block")
+    document.getElementById('pad').style.display = "none";
+  else
+    document.getElementById('pad').style.display = "block";
+}
 
