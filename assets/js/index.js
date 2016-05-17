@@ -240,9 +240,21 @@ function getLanguages() {
 			}));
 			i += 1;
 		}
-	},
-	error: function (response) {
-	},
+		//will markdown the challenge..
+	    var converter = new showdown.Converter();
+	    var pad = document.getElementById('pad');
+	    var markdownArea = document.getElementById('markdown');   
+
+	    var convertTextAreaToMarkdown = function(){
+	      var markdownText = pad.value;
+	      html = converter.makeHtml(markdownText);
+	      markdownArea.innerHTML = html;
+	    };
+	    pad.addEventListener('input', convertTextAreaToMarkdown);
+	    convertTextAreaToMarkdown();
+		},
+		error: function (response) {
+		},
 	});
 }
 
@@ -306,3 +318,12 @@ $(document).ready(function() {
 		document.getElementById('editor').style.fontSize='16px';
 	});
 });
+
+
+function showDiv1() {
+  var my_disply = document.getElementById('pad').style.display;
+  if(my_disply == "block")
+    document.getElementById('pad').style.display = "none";
+  else
+    document.getElementById('pad').style.display = "block";
+}

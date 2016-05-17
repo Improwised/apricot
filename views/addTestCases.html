@@ -59,37 +59,37 @@
                   <form class="form-horizontal" role="form" method="POST" action="./addTestCases">
                     <fieldset>
                       <legend>Challenge:</legend><br>
-                        <div class="form-group">
-                          <div class="col-sm-10">
-                            <input type="hidden" class="form-control" name="qId" id="qId" value = "">
-                          </div>
+                      <div class="form-group">
+                        <div class="col-sm-10">
+                          <input type="hidden" class="form-control" name="qId" id="qId" value = "">
                         </div>
-                        {{range .}}
-                        <div class="form-group">
-                          <label class="control-label col-sm-2" for="description">Description:</label>
-                          <div class="col-sm-10">
-                            <label class="control-label" name="description" id="description" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Description}}</label>
-                          </div>
+                      </div>
+                      {{range .}}
+                      <div class="form-group">
+                        <label class="control-label col-sm-2" for="description">Description:</label>
+                        <div class="col-sm-10">
+                          <label class="control-label" name="description" id="description" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Description}}</label>
                         </div>
-                        {{end}}
+                      </div>
+                      {{end}}
 
-                        <div class="form-group">
-                            <label class="control-label col-sm-2" for="description">Input:</label>
-                            <div class="col-sm-10">
-                              <textarea class="form-control" name="input" id="input" rows="3" cols="20" value="" placeholder="Input for Challenge"></textarea>
-                            </div>
-                            <br><br><br><br>
-                            <label class="control-label col-sm-2" for="description">Output:</label>
-                            <div class="col-sm-10">
-                              <textarea class="form-control" name="output" id="output" rows="3" cols="20" value="" placeholder="Output for Challenge"></textarea>
-                            </div>
+                      <div class="form-group">
+                          <label class="control-label col-sm-2" for="description">Input:</label>
+                          <div class="col-sm-10">
+                            <textarea class="form-control" name="input" id="input" rows="3" cols="20" value="" placeholder="Input for Challenge"></textarea>
                           </div>
-
-                        <div class="form-group">
-                          <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-default" name = "submit" value = "submit">
+                          <br><br><br><br>
+                          <label class="control-label col-sm-2" for="description">Output:</label>
+                          <div class="col-sm-10">
+                            <textarea class="form-control" name="output" id="output" rows="3" cols="20" value="" placeholder="Output for Challenge"></textarea>
                           </div>
                         </div>
+
+                      <div class="form-group">
+                        <div class="col-sm-offset-2 col-sm-10">
+                          <input type="submit" class="btn btn-default" name = "submit" value = "Submit">
+                        </div>
+                      </div>
                     </fieldset>
                   </form>
                 </div>

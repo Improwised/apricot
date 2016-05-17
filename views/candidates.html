@@ -9,22 +9,28 @@
     <title>Improwised Admin</title>
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../assets/css/sb-admin.css" rel="stylesheet" type="text/css">
-    <link href="../assets/css/plugins/morris.css" rel="stylesheet" type="text/css">
-    <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="../assets/js/index.js" type="text/javascript"></script>
+    <link href="../assets/css/morris.css" rel="stylesheet" type="text/css">
+    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../assets/css/select2.min.css" type="text/css" charset="utf-8">
   </head>
 
   <body>
     <div id="wrapper">
+
       <!-- Navigation -->
+
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
+
         <!-- Brand and toggle get grouped for better mobile display -->
+
         <div class="navbar-header">
           <a class="navbar-brand" href="http://www.improwised.com/">Improwised</a>
         </div>
+
+        <!-- /.Brand and toggle get grouped for better mobile display -->
+
         <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+
         <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
           <ul class="nav navbar-nav side-nav list-group">
             <li class="list-group-item">
@@ -34,11 +40,18 @@
             </li>
           </ul>
         </div>
-        <!-- /.navbar-collapse -->
+
+        <!-- /.Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+
       </nav>
+
+      <!-- /.Navigation -->
+
       <div id="page-wrapper">
         <div class="container-fluid">
+
           <!-- Page Heading -->
+
           <div class="row">
             <div class="col-lg-12">
               <h1 class="page-header">
@@ -51,13 +64,38 @@
               </ol>
             </div>
           </div>
+
+          <!-- /Pahe Heading -->
+
+          <!-- Search Menu -->
+
+          <div class="form-group">            
+            <div class="col-sm-2" >
+              <select name="select2" id="field" class="select2" style="width: 150px;">
+                <option value="all">All</option>
+                <option value="name">Name</option>
+                <option value="email">Email</option>
+                <option value="college">College</option>
+                <option value="degree">Degree</option>
+              </select>
+            </div>
+
+            <div class="col-sm-1">
+              <input type="text" class="form-control" name="search" id="search" style="width: 200px; height: 30px;" value="" onkeyup="" placeholder="Search">
+            </div>
+          </div>
+          <br><br>
+
+          <!-- /Search Menu -->
+
+
           <!-- /.row -->
           <div class="row">
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
                 <div class="card-block">
                   <div class="table-responsive">
-                    <table class="table table-bordered table-hover table-striped">
+                    <table id="myTable" class="table table-bordered table-hover table-striped">
                       <thead>
                         <tr>
                           <th style="width:2px;"><a href="/candidates?fieldOfOrder=id">Id</a></th>
@@ -66,11 +104,14 @@
                           <th style="width:2px;"><a href="/candidates">Degree</a></th>
                           <th style="width:2px;"><a href="/candidates">College</a></th>
                           <th style="width:2px;"><a href="/candidates">Year Of Completion</a></th>
-                           <th style="width:2px;"><a href="/candidates">No Of Questions Attempted</a></th>
+                          <th style="width:2px;"><a href="/candidates">No Of Questions Attempted</a></th>
                           <th style="width:2px;"><a href="/candidates">No. of attempts for chellange</a></th>
                           <th style="width:2px;"><a href="/candidates">Modified</a></th>
                         </tr>
                       </thead>
+
+                      <!-- Fetch data and show in table -->
+
                       <tbody>
                         {{with .}}
                         {{range .}}
@@ -88,17 +129,44 @@
                         {{end}}
                         {{end}}
                       </tbody>
+
+                      <!-- /.Fetch data and show in table -->
+
                     </table>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- /.row -->
+
+        <!-- /.row -->
+
         </div>
-          <!-- /.container-fluid -->
+
+        <!-- /.container-fluid -->
+
       </div>
-        <!-- /#page-wrapper -->
+
+      <!-- /#page-wrapper -->
+
     </div>
   </body>
 </html>
+
+
+
+<!-- Scripting -->
+
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
+<script type="text/javascript" src="../assets/js/index.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
+<script type="text/javascript" src="../assets/js/select2.min.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $(".select2").select2(); ({
+      placeholder: "Select"
+    });
+  });
+</script>
+<!-- /Scripting -->
+

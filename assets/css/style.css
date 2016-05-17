@@ -480,20 +480,20 @@ legend{
 }
 
 div.one {
-    border: 1px solid red;
-    background-color: yellow;
-    padding-top: 50px;
-    padding-right: 30px;
-    padding-bottom: 50px;
-    padding-left: 80px;
+  border: 1px solid red;
+  background-color: yellow;
+  padding-top: 50px;
+  padding-right: 30px;
+  padding-bottom: 50px;
+  padding-left: 80px;
 }
 @-webkit-keyframes animate-stripes {
-    from {
-        background-position: 0 0;
-    }
-    to {
-       background-position: -50px 0;
-    }
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: -50px 0;
+  }
 }
 
 .language > span {
@@ -505,16 +505,50 @@ div.one {
   color:red;
 }
 
+/* Ace Editor */
+
 .clearfix:after {
-     visibility: hidden;
-     display: block;
-     font-size: 0;
-     content: " ";
-     clear: both;
-     height: 0;
-     }
-.clearfix { display: inline-block; }
+  visibility: hidden;
+  display: block;
+  font-size: 0;
+  content: " ";
+  clear: both;
+  height: 0;
+}
+
+.clearfix {
+  display: inline-block;
+}
 /* start commented backslash hack \*/
-* html .clearfix { height: 1%; }
-.clearfix { display: block; }
+* html .clearfix {
+  height: 1%;
+}
+.clearfix {
+  display: block;
+}
 /* close commented backslash hack */
+
+/* / Ace Editor */
+
+
+/*Markdown Editor */
+
+#pad{
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+
+  border: none;
+  overflow: auto;
+  outline: none;
+  resize: none;
+
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
+#markdown {
+  overflow: auto;
+  width: 90%;
+}
+
+/* /Markdown Editor */

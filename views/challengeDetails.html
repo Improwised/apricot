@@ -72,19 +72,21 @@
                               <div class="tab-content">
                                 <div id="menu2" class="tab-pane fade in active">
                                   <div class="full-width">
-                                    <div class="field-label"><strong>Challenge :     {{ .Challenge }}</strong>
+                                    <div class="field-label"><strong>Challenge : {{ .Challenge }}</strong>
+
                                     <br><br>
                            {{ end }}
-                            {{ end }}
-
+                          {{ end }}
+                                  </div>
+                                </div> 
                           {{with .}}
                             {{range .GetAnswers}}
                               <div class="form-group">
-                                <label class="control-label col-sm-2" for="attempts">  </label>
-                                <textarea name="attempts" id="attempts" class="form-control" rows="5" cols="50" style="width: 50%;" readonly="readonly">{{ .Answer }}</textarea>
+                                <label class="control-label col-sm-2" for="attempts"></label>
+                                <pre name="attempts" id="attempts" style="width: 50%;">{{ .Answer }}</pre>
                               </div>
-                          {{ end }}
                             {{ end }}
+                          {{ end }}
                                 </div>
                               </div>
                             </div>
