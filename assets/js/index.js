@@ -243,7 +243,7 @@ function getLanguages() {
 		//will markdown the challenge..
 	    var converter = new showdown.Converter();
 	    var pad = document.getElementById('pad');
-	    var markdownArea = document.getElementById('markdown');   
+	    var markdownArea = document.getElementById('markdown');
 
 	    var convertTextAreaToMarkdown = function(){
 	      var markdownText = pad.value;
@@ -285,7 +285,6 @@ $(document).ready(function() {
 		var aceLang;
 
 		if(lang === "C" ||lang === "Cpp" || lang === "Ruby" || lang === "Oracle" || lang === "Go" || lang === "Python3" || lang === "Visualbasic" || lang === "Smalltalk" || lang === "Java8" || lang === "Db2" ){
-
 			if(lang === "C" || lang === "Cpp")	aceLang = "c_cpp"
 			if(lang === "Oracle" ) aceLang = "sql"
 			if(lang === "Go" ) aceLang = "golang"
@@ -295,7 +294,6 @@ $(document).ready(function() {
 			if(lang === "Smalltalk" ) aceLang = "smarty"
 			if(lang === "Java8" ) aceLang = "javascript"
 			if(lang === "Db2" ) aceLang = "sqlserver"
-
 		}
 		else {
 			 aceLang = lang.toLowerCase();
@@ -306,8 +304,8 @@ $(document).ready(function() {
 		var s = document.createElement("script");
 
 		s.type = "text/javascript";
-		s.src = '//ajaxorg.github.io/ace-builds/src/mode-'+ aceLang +'.js';
-	 	$("head").append(s);
+		s.src = '//ajaxorg.github.io/ace-builds/src/mode-'+ aceLang +'.js';//CDN Path..
+		$("head").append(s);
 
 		var editor = ace.edit("editor");
 		var langMode = ace.require("ace/mode/"+ aceLang).Mode;
@@ -319,11 +317,47 @@ $(document).ready(function() {
 	});
 });
 
-
-function showDiv1() {
-  var my_disply = document.getElementById('pad').style.display;
-  if(my_disply == "block")
-    document.getElementById('pad').style.display = "none";
-  else
-    document.getElementById('pad').style.display = "block";
+//Searching start....
+function searchCandidates(value){
+	var field = document.getElementById('field').value;
+	$.ajax({
+			url: "search",
+			type: 'post',
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				'field' : field,
+				'value' : value
+			},
+		success: function (response) {
+			$('.table ').children().remove();
+			 $(document).ready(function () {
+						var tr;
+						for (var i = 0; i < response.length; i++) {
+								tr = $('<tr/>');
+								tr.append("<td>" + response[i].Id + "</td>");
+								tr.append("<td><a href='/personalInformation?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}'>" + response[i].Name + "</a></td>");
+								tr.append("<td>" + response[i].Email + "</td>");
+								tr.append("<td>" + response[i].Degree + "</td>");
+								tr.append("<td>" + response[i].College + "</td>");
+								tr.append("<td>" + response[i].YearOfCompletion + "</td>");
+								tr.append("<td>" + response[i].NoOfQuestionsAttmpted + "</td>");
+								tr.append("<td>" + response[i].NoOfAttemptForChellange + "</td>");
+								tr.append("<td>" + response[i].Modified + "</td>");
+								$('table').append(tr);
+						}
+				});
+		},
+		error: function (error) {
+			console.log(error);
+		}
+	});
 }
+
+// function showDiv1() {
+//   var my_disply = document.getElementById('pad').style.display;
+//   if(my_disply == "block")
+//     document.getElementById('pad').style.display = "none";
+//   else
+//     document.getElementById('pad').style.display = "block";
+// }
+

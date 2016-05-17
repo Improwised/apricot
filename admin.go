@@ -10,9 +10,11 @@ import (
 	"html/template"
 	"encoding/json"
 	"os"
+	// "io/ioutil"
 	"time"
 	"strings"
 	"bytes"
+	// "strconv"
 		// "reflect"
 )
 
@@ -207,7 +209,7 @@ type GeneralInfo struct {
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id order by c.id desc")
+	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id order by c.id asc ")
 	rows1, _ := db.Query(stmt1)
 
 	UsersInfo := []GeneralInfo{}
@@ -217,7 +219,7 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Degree, &user.College, &user.YearOfCompletion, &user.Modified, &user.ChallengeAttempts)
 
 		//extract only date from timestamp========
-	 	str :=&user.Modified
+		str :=&user.Modified
 		str1 := str.String()
 		s := strings.Split(str1," ")
 		user.DateOnly = s[0]
@@ -239,7 +241,7 @@ type ChallengeInfo struct {
 }
 
 func newChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	description := r.URL.Query().Get("desc")
+	description := r.FormValue("desc")
 
 	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
 	stmt2.Query(description)
@@ -259,7 +261,6 @@ func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 var id string
 func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-
 	id = r.FormValue("id")
 
 	QuestionsAttended := r.FormValue("queAttempt")
@@ -288,7 +289,6 @@ type GetQuestions struct {
 }
 
 func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-
 	rows, _ := db.Query("SELECT questions.description,questions_answers.answer FROM questions INNER JOIN questions_answers ON questions.id=questions_answers.questionsid where candidateid = "+ id +" ORDER BY questions.sequence")
 	questionsInfo := []GetQuestions{}
 	qinfo := GetQuestions{}
@@ -300,7 +300,6 @@ func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("./views/questionDetails.html")
 	t.Execute(w, questionsInfo)
 }
-
 
 type GetChallenge struct {
 	Challenge string
@@ -371,11 +370,63 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	searchField := "c." + r.FormValue("field")
+	searchContain := r.FormValue("value")
+
+	var stmt1 string
+	if(searchField == "c.all"){//for searching from all the field present in dropdown...
+		stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.name LIKE '%%%s%%') OR (c.email LIKE '%%%s%%') OR (c.degree LIKE '%%%s%%') OR (c.college LIKE '%%%s%%')) group by c.id order by c.id asc ",searchContain,searchContain,searchContain,searchContain)
+	} else {//For specific field from select option like search by name,email etc.
+		stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND "+ searchField +" LIKE '%%%s%%' group by c.id order by c.id asc ",searchContain)
+	}
+	rows1, err := db.Query(stmt1)
+	if(err != nil){
+		panic (err)
+	}
+	UsersInfo := []GeneralInfo{}
+	user := GeneralInfo{}
+
+	for rows1.Next() {
+
+		rows1.Scan(&user.Id, &user.Name, &user.Email, &user.Degree, &user.College, &user.YearOfCompletion, &user.Modified, &user.ChallengeAttempts)
+
+		//extract only date from timestamp========
+		str :=&user.Modified
+		str1 := str.String()
+		s := strings.Split(str1," ")
+		user.DateOnly = s[0]
+		//================================
+
+		//=========will count no of attended questions========
+		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) > 0 AND  candidateid="+user.Id)
+		rows2, _ := db.Query(stmt2)
+		for rows2.Next() {
+			rows2.Scan(&user.QuestionsAttended)
+		}
+		UsersInfo = append(UsersInfo, user)
+		fmt.Println("....",UsersInfo)
+	}
+	//================================================
+
+	//========to convert response to JSON ==========
+	b, err := json.Marshal(UsersInfo)
+	if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+	}
+	//==========================
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+}
+
 func main() {
 	db = setupDB()
 	defer db.Close()
 
 	goji.Handle("/", candidateHandler)
+	goji.Handle("/search", searchHandler)
 	goji.Handle("/candidates", candidateHandler)
 	goji.Get("/questions", questionsHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
@@ -391,7 +442,9 @@ func main() {
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/newChallenge", newChallengeHandler)
+
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
+	http.Handle("/assets/jquery/", http.StripPrefix("/assets/jquery/", http.FileServer(http.Dir("assets/jquery"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
 	http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
