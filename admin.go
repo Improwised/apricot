@@ -15,7 +15,7 @@ import (
 	"strings"
 	"bytes"
 	// "strconv"
-		// "reflect"
+	// "reflect"
 )
 
 type Configuration struct {
@@ -371,15 +371,31 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	searchField := "c." + r.FormValue("field")
-	searchContain := r.FormValue("value")
-
+	//data comes from client side...
+	name := r.FormValue("name")
+	degree := r.FormValue("degree")
+	college := r.FormValue("college")
+	year := r.FormValue("year")
 	var stmt1 string
-	if(searchField == "c.all"){//for searching from all the field present in dropdown...
-		stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.name LIKE '%%%s%%') OR (c.email LIKE '%%%s%%') OR (c.degree LIKE '%%%s%%') OR (c.college LIKE '%%%s%%')) group by c.id order by c.id asc ",searchContain,searchContain,searchContain,searchContain)
-	} else {//For specific field from select option like search by name,email etc.
-		stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND "+ searchField +" LIKE '%%%s%%' group by c.id order by c.id asc ",searchContain)
-	}
+
+	// =======================making query for search =================================
+	if(name == "" && degree == "" ){
+			stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%'))  group by c.id order by c.id asc ",college, year)
+		} else if(name == "" && college == "" ){
+				stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,year)
+			} else if (degree == "" && college == ""){
+					stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email LIKE '%%%s%%')) AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,year)
+				} else if (name == ""){
+						stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,college,year)
+					} else if(college == ""){
+							stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,year)
+						} else if(degree == ""){
+								stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,year)
+							}else if(name != "" && degree != "" && college != "")	{
+									 stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,college,year)
+								}
+	//============================================================================
+
 	rows1, err := db.Query(stmt1)
 	if(err != nil){
 		panic (err)
@@ -405,7 +421,6 @@ func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			rows2.Scan(&user.QuestionsAttended)
 		}
 		UsersInfo = append(UsersInfo, user)
-		fmt.Println("....",UsersInfo)
 	}
 	//================================================
 

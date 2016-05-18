@@ -318,34 +318,53 @@ $(document).ready(function() {
 });
 
 //Searching start....
-function searchCandidates(value){
-	var field = document.getElementById('field').value;
+function searchCandidates(){
+	var name = document.getElementById('name').value;
+	var degree = document.getElementById('degree').value;
+	var college = document.getElementById('college').value;
+	var year = document.getElementById('year').value;
+
+	console.log(name, degree, college);
 	$.ajax({
 			url: "search",
 			type: 'post',
 			contentType: "application/x-www-form-urlencoded",
 			data: {
-				'field' : field,
-				'value' : value
+				'year' : year,
+				'name' : name,
+				'degree' : degree,
+				'college' : college
 			},
 		success: function (response) {
 			$('.table ').children().remove();
-			 $(document).ready(function () {
-						var tr;
-						for (var i = 0; i < response.length; i++) {
-								tr = $('<tr/>');
-								tr.append("<td>" + response[i].Id + "</td>");
-								tr.append("<td><a href='/personalInformation?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}'>" + response[i].Name + "</a></td>");
-								tr.append("<td>" + response[i].Email + "</td>");
-								tr.append("<td>" + response[i].Degree + "</td>");
-								tr.append("<td>" + response[i].College + "</td>");
-								tr.append("<td>" + response[i].YearOfCompletion + "</td>");
-								tr.append("<td>" + response[i].NoOfQuestionsAttmpted + "</td>");
-								tr.append("<td>" + response[i].NoOfAttemptForChellange + "</td>");
-								tr.append("<td>" + response[i].Modified + "</td>");
-								$('table').append(tr);
-						}
-				});
+			$(document).ready(function () {
+					var tr,tr2;
+
+							tr2 = $('<tr/>');
+							tr2.append("<th> Id</th>");
+							tr2.append("<th> Name</th>");
+							tr2.append("<th> Email</th>");
+							tr2.append("<th> Degree</th>");
+							tr2.append("<th> College</th>");
+							tr2.append("<th> YearOfCompletion</th>");
+							tr2.append("<th> NoOfQuestionsAttmpted</th>");
+							tr2.append("<th> NoOfAttemptForChellange</th>");
+							tr2.append("<th> Modified</th>");
+							$('table').append(tr2);
+					for (var i = 0; i < response.length; i++) {
+							tr = $('<tr/>');
+							tr.append("<td>" + response[i].Id + "</td>");
+							tr.append("<td><a href='/personalInformation?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}'>" + response[i].Name + "</a></td>");
+							tr.append("<td>" + response[i].Email + "</td>");
+							tr.append("<td>" + response[i].Degree + "</td>");
+							tr.append("<td>" + response[i].College + "</td>");
+							tr.append("<td>" + response[i].YearOfCompletion + "</td>");
+							tr.append("<td>" + response[i].QuestionsAttended + "</td>");
+							tr.append("<td>" + response[i].ChallengeAttempts + "</td>");
+							tr.append("<td>" + response[i].DateOnly + "</td>");
+							$('table').append(tr);
+					}
+			});
 		},
 		error: function (error) {
 			console.log(error);

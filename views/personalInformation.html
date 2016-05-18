@@ -42,7 +42,11 @@
           <div class="row">
             <div class="col-lg-12">
               <h1 class="page-header">
-                Dashboard <small>Statistics Overview</small>
+                {{with .}}
+                {{range .}}
+                Dashboard <small>{{.Name}}</small>
+                {{ end }}
+                {{ end }}
               </h1>
 <!--               <ol class="breadcrumb">
                 <li class="active">
