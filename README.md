@@ -36,7 +36,7 @@ $ go run index.go
 ```
 * Open
 ```
-$ http://localhost:8000/index
+$ http://localhost:8000/
 ```
 
 ## Admin Side
@@ -47,7 +47,7 @@ $ go run admin.go
 ```
 * Open
 ```
-$ http://localhost:8000/candidates
+$ http://localhost:8000/
 ```
 
 ## Structure
@@ -61,6 +61,18 @@ TODO: Contributing guidelines and code styles
 ## Testing
 
 TODO: How to run tests
+* Admin Side
+```
+	1. Add Questions.
+	2. Add Chellenges.
+	3. Add TestCases For Chellenge.
+```
+* Client Side
+```
+	1.Enter Email.
+	2.Visit link got in Email Id.
+```
+
 
 # Copyright & License
 
