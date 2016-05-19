@@ -314,6 +314,7 @@ $(document).ready(function() {
 		//will set the theme of editor...
 		editor.setTheme("ace/theme/merbivore");
 		document.getElementById('editor').style.fontSize='16px';
+		document.getElementById('editor').style.letterSpacing = "0px";
 	});
 });
 
@@ -324,7 +325,6 @@ function searchCandidates(){
 	var college = document.getElementById('college').value;
 	var year = document.getElementById('year').value;
 
-	console.log(name, degree, college);
 	$.ajax({
 			url: "search",
 			type: 'post',
@@ -364,6 +364,7 @@ function searchCandidates(){
 							tr.append("<td>" + response[i].DateOnly + "</td>");
 							$('table').append(tr);
 					}
+					$('table').addClass('sortable');
 			});
 		},
 		error: function (error) {

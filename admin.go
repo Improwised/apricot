@@ -371,30 +371,70 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	//data comes from client side...
+	//data comes from admin side...
 	name := r.FormValue("name")
 	degree := r.FormValue("degree")
 	college := r.FormValue("college")
 	year := r.FormValue("year")
+
+	// default query for search...
+	var query ="SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts)"
+	query += " FROM candidates c"
+	query += " JOIN sessions s ON c.id = s.candidateid"
+	query += " JOIN challenge_answers c1 ON s.id = c1.sessionid"
+	query += " where s.status=0 "
+
 	var stmt1 string
 
 	// =======================making query for search =================================
-	if(name == "" && degree == "" ){
-			stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%'))  group by c.id order by c.id asc ",college, year)
-		} else if(name == "" && college == "" ){
-				stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,year)
-			} else if (degree == "" && college == ""){
-					stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email LIKE '%%%s%%')) AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,year)
-				} else if (name == ""){
-						stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND ((c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,college,year)
-					} else if(college == ""){
-							stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,year)
-						} else if(degree == ""){
-								stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,year)
-							}else if(name != "" && degree != "" && college != "")	{
-									 stmt1 = fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,college,year)
-								}
-	//============================================================================
+
+if(year =="All"){//will search for all the year passing out candidates..
+	if(name ==""){
+		if(degree == "" && college == ""){//search for all the field..
+			stmt1 = fmt.Sprintf(query+" group by c.id order by c.id asc ")
+			} else if(degree == ""){//will search for college only..
+				stmt1 = fmt.Sprintf(query+" AND (c.college ILIKE '%%%s%%')  group by c.id order by c.id asc ",college)
+				}else if(college == ""){//will search for degree only..
+					stmt1 = fmt.Sprintf(query+" AND (c.degree ILIKE '%%%s%%') group by c.id order by c.id asc ",degree)
+					}
+
+	} else if(degree == ""){
+		 if(degree == "" && college == ""){//will search for name only..
+				stmt1 = fmt.Sprintf(query+" AND ((c.name ILIKE '%%%s%%') OR (c.email LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name)
+				} else if(degree == ""){// will search for both name and college fields...
+					stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college)
+						}
+
+	} else if(college == ""){//will search for name and degree both field....
+		stmt1 = fmt.Sprintf(query+" AND ((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree)
+		} else {//will search for all the fields..
+			stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,degree)
+			}
+
+} else {//will search for specific year passing out candidates..
+	if(name ==""){
+		if(degree == "" && college == ""){//search for all the field with specific year..
+			stmt1 = fmt.Sprintf(query+" AND (c.yearOfCompletion::text LIKE '%%%s%%')group by c.id order by c.id asc ",year)
+			} else if(degree == ""){//will search for college only with specific year..
+				stmt1 = fmt.Sprintf(query+" AND ((c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",college,year)
+				}else if(college == ""){//will search for degree only with specific year..
+					stmt1 = fmt.Sprintf(query+" AND ((c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,year)
+					}
+
+	} else if(degree == ""){
+		 if(degree == "" && college == ""){//will search for name only with specific year..
+				stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email LIKE '%%%s%%')) AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,year)
+				} else if(degree == ""){// will search for both name and college fields with specific year...
+					stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,year)
+						}
+
+	} else if(college == ""){//will search for name and degree both field with specific year....
+		stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) AND ((c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,year)
+		} else {//will search for all the fields with specific year..
+			stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,degree,year)
+			}
+}
+	//==============================================================================================================================================
 
 	rows1, err := db.Query(stmt1)
 	if(err != nil){
