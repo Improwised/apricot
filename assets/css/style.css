@@ -32,12 +32,14 @@ h2 {
 h3 {
   color: #888;
 }
+
  #editor {
+
+       letter-spacing: 0;
         /*position: absolute;*/
         width: 100%;
         height: 600px;
     }
-
 
 #topBar {
   height: 10px;
@@ -509,6 +511,7 @@ div.one {
 
 .clearfix:after {
   visibility: hidden;
+
   display: block;
   font-size: 0;
   content: " ";
@@ -551,4 +554,28 @@ div.one {
   width: 90%;
 }
 
-/* /Markdown Editor */
+/*Markdown Editor*/
+
+/*Pagination*/
+table {
+    width: 40em;
+    margin: 2em auto;
+}
+
+thead {
+    background: #F0F8FF;
+    color: #fff;
+}
+
+div.pager span {
+  position: relative;
+  /*float: left;*/
+  padding: 6px 12px;
+  margin-left: -1px;
+  line-height: 1.42857143;
+  color: #337ab7;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #ddd;
+}
+/*pagination*/
