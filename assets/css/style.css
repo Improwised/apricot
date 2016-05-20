@@ -558,7 +558,7 @@ div.one {
 
 /*Pagination*/
 table {
-    width: 40em;
+    width: 100%;
     margin: 2em auto;
 }
 
@@ -577,5 +577,6 @@ div.pager span {
   text-decoration: none;
   background-color: #fff;
   border: 1px solid #ddd;
+  cursor: -webkit-grab;
 }
 /*pagination*/

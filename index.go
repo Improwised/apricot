@@ -492,7 +492,13 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		checkErr(err)
 	}
 	//getting last answer for perticullar challege
-	var query1 = "select answer from challenge_answers where sessionid=(select id from sessions where hash ='"+ hash +"') AND id=(select MAX(id) from challenge_answers where sessionid=(select id from sessions where hash ='"+ hash +"'))"
+	var query1 = "select answer from challenge_answers"
+			query1 += " where sessionid="
+			query1 += " (select id from sessions where hash ='"+ hash +"')"
+			query1 += " AND id=(select MAX(id) from challenge_answers"
+			query1 += " where sessionid="
+			query1 += " (select id from sessions"
+			query1 += " where hash ='"+ hash +"'))"
 
 	result1, _ := db.Query(query1)
 	sourcecode := []getChallenge{}
@@ -910,5 +916,6 @@ func main() {
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
 	http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
+	http.Handle("/vendor/github.com/ajaxorg/ace/lib/ace/mode/", http.StripPrefix("/vendor/github.com/ajaxorg/ace/lib/ace/mode/", http.FileServer(http.Dir("vendor/github.com/ajaxorg/ace/lib/ace/mode/"))))
 	goji.Serve()
 }

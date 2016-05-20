@@ -209,7 +209,14 @@ type GeneralInfo struct {
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	stmt1 := fmt.Sprintf("SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts) FROM candidates c JOIN sessions s ON c.id = s.candidateid JOIN challenge_answers c1 ON s.id = c1.sessionid where s.status=0 group by c.id order by c.id asc ")
+	var query = "SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts)"
+		query += " FROM candidates c JOIN sessions s ON c.id = s.candidateid"
+		query += " JOIN challenge_answers c1 ON s.id = c1.sessionid"
+		query += " where s.status=0"
+		query += " group by c.id"
+		query += "  order by c.id asc "
+
+	stmt1 := fmt.Sprintf(  query  )
 	rows1, _ := db.Query(stmt1)
 
 	UsersInfo := []GeneralInfo{}
@@ -289,7 +296,14 @@ type GetQuestions struct {
 }
 
 func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	rows, _ := db.Query("SELECT questions.description,questions_answers.answer FROM questions INNER JOIN questions_answers ON questions.id=questions_answers.questionsid where candidateid = "+ id +" ORDER BY questions.sequence")
+	var query = "SELECT questions.description,questions_answers.answer"
+		query += " FROM questions"
+		query += " INNER JOIN questions_answers"
+		query += " ON questions.id=questions_answers.questionsid"
+		query += " where candidateid = "+ id +""
+		query += " ORDER BY questions.sequence"
+
+	rows, _ := db.Query(query)
 	questionsInfo := []GetQuestions{}
 	qinfo := GetQuestions{}
 	for rows.Next() {
@@ -338,16 +352,32 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 	allDetails.GetChallenge = challenge
 	allDetails.GetAnswers = answer
 
-	t, _ := template.ParseFiles("./views/challengeDetails.html")
+	t, _ := template.ParseFiles("./views/challengeDetails.htmls")
 	t.Execute(w, allDetails)
 }
 
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
+	// var defaultCaseFlag = 0
+	// var defaultcase string ="false"
 
 	if r.FormValue("qId") != "" {
 		input := r.FormValue("input")
 		output := r.FormValue("output")
+
+		stmt, _ := db.Prepare("select challengeId from challenge_cases where challengeid = ($1) ")
+		rows, err := stmt.Query(challengeId)
+		panic(err)
+		ID := []GetChallenge{}
+		q := GetChallenge{}
+		for rows.Next() {
+			err := rows.Scan(&q.Challenge)
+			ID = append(ID, q)
+			checkErr(err)
+		}
+		// if(q.Challenge == ""){
+		// 	fmt.Println("*********")
+		// }
 
 		stmt1, _ := db.Prepare("insert into challenge_cases(challengeid, input, output, created) values ($1, $2, $3,NOW());")
 		stmt1.Query(challengeId, input, output)
@@ -362,8 +392,8 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		q := questionsInformation{}
 		for rows1.Next() {
 			err := rows1.Scan(&q.Description)
-			questions = append(questions, q)
 			checkErr(err)
+			questions = append(questions, q)
 		}
 		t, _ := template.ParseFiles("./views/addTestCases.html")
 		t.Execute(w, questions)
