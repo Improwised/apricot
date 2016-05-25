@@ -9,18 +9,24 @@
 
     <title>Improwised Admin</title>
 
-    <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css">
-    <link href="../assets/css/sb-admin.css" rel="stylesheet" type="text/css">
-    <link href="../assets/css/morris.css" rel="stylesheet" type="text/css">
-    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
-    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" type="text/javascript"></script>
-    <script type="text/javascript" src="../assets/js/index.js" type="text/javascript"></script>
+    <!-- Stylesheets -->
+
+    <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-switch.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
+    <link rel="stylesheet" type="text/css" href="../assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/select2.min.css">
+
+    <!-- /Stylesheets -->
+
   </head>
 
   <body>
     <div id="wrapper">
+
       <!-- Navigation -->
+
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -36,8 +42,10 @@
             </li>
           </ul>
         </div>
-        <!-- /.navbar-collapse -->
       </nav>
+
+      <!-- /.navbar-collapse -->
+      
       <div id="page-wrapper">
         <div class="container-fluid">
           <!-- Page Heading -->
@@ -57,29 +65,41 @@
                   <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Challenge</button>
                 </li>
               </ol>
+              
               <!-- Add Challenge Modal -->
+
               <div class="modal fade" id="myModal" role="dialog">
                 <div class="modal-dialog">
                   <div class="modal-dialog modal-lg">
-                   <!-- Modal content-->
+                   <!-- Modal content -->
                     <div class="modal-content">
                       <div class="modal-header">
                        <button type="button" class="close" data-dismiss="modal">&times;</button>
                        <h4 class="modal-title">Challenge</h4>
                       </div>
-                      <div class="modal-body">
+                      <div class="modal-body" style="">
                         <form class="form-horizontal" role="form" onsubmit="getid();" method="POST" action="./addchallenge" >
-                          <div class="form-group">
-                            <label class="control-label col-sm-2" for="description">Description:</label>
-                            <div class="col-sm-10">
-                              <textarea class="form-control" name="description" id="description" rows="3" cols="40" value="" required placeholder="Enter description"></textarea>
+
+                        <!-- Markdown Editor -->
+
+                          <div>
+                            <div class="form-group">
+                              <label class="control-label col-sm-2" for="description">Description:</label>
+                            </div>
+                            <div class="clearfix">
+                              <textarea id="pad">Write your text</textarea>
+                              <div id="markdown"></div>
+                            </div>
+                            <br><br>
+                            <div class="form-group">
+                              <div class="col-sm-offset-5 col-sm-10" style="margin-left : 44%">
+                              <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
+                              </div>
                             </div>
                           </div>
-                          <div class="form-group">
-                            <div class="col-sm-offset-2 col-sm-10">
-                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
-                            </div>
-                          </div>
+
+                          <!-- /Markdown Editor -->
+
                         </form>
                       </div>
                       <div class="modal-footer">
@@ -89,10 +109,14 @@
                   </div>
                 </div>
               </div>
+
               <!-- Exit Challenge Modal -->
+
             </div>
           </div>
+
           <!-- /.row -->
+
           <div class="row">
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
@@ -110,7 +134,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                       <!--  {{with .}} -->
+                        <!-- {{with .}} -->
                         {{range .QuestionsInfo}}
                         <tr>
                           <td>{{.Id}}</td>
@@ -137,7 +161,7 @@
                           </td>
                         </tr>
                         {{end}}
-                        <!--  {{end}} -->
+                         <!-- {{end}} -->
                       </tbody>
                     </table>
                   </div>
@@ -145,11 +169,57 @@
               </div>
             </div>
           </div>
-          <!-- /.row -->
+
+        <!-- /.row -->
+
         </div>
-          <!-- /.container-fluid -->
+
+        <!-- /.container-fluid -->
+
       </div>
-        <!-- /#page-wrapper -->
+
+      <!-- /#page-wrapper -->
+
     </div>
+
+    <!-- Scripting -->
+
+    <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../assets/js/bootstrap-switch.min.js"></script>
+    <script type="text/javascript" src="../assets/js/select2.min.js"></script>
+    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../assets/js/index.js" type="text/javascript"></script> 
+    <script type="text/javascript" src="https://cdn.rawgit.com/showdownjs/showdown/1.0.2/dist/showdown.min.js"></script>
+    <script type="text/javascript" src="script.js"></script>
+    <script type="text/javascript">
+      window.onload = function() {
+        var converter = new showdown.Converter();
+        var pad = document.getElementById('pad');
+        var markdownArea = document.getElementById('markdown');   
+
+        var convertTextAreaToMarkdown = function(){
+          var markdownText = pad.value;
+          html = converter.makeHtml(markdownText);
+          markdownArea.innerHTML = html;
+        };
+
+        pad.addEventListener('input', convertTextAreaToMarkdown);
+
+        convertTextAreaToMarkdown();
+      };
+    </script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $(".select2").select2(); ({
+          minimumResultsForSearch: -1,
+        });
+        $("[name='my-checkbox']").bootstrapSwitch();
+      });
+    </script>
+
+    <!-- /Scripting -->
+
   </body>
 </html>
+
+
