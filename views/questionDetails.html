@@ -11,8 +11,9 @@
 
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
-    <link href="../assets/css/plugins/morris.css" rel="stylesheet">
-    <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="../assets/css/morris.css" rel="stylesheet">
+    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="../assets/js/index.js"></script>
     <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
 
@@ -59,12 +60,14 @@
                   <form class="form-horizontal" role="form" method="POST" action="">
                     <fieldset>
                       <!-- <legend></legend><br> -->
+                      {{with .}}
+                        {{range .}}
                         <div class="container">
                           <!-- <h2>Dynamic Tabs</h2> -->
                           <ul class="nav nav-tabs">
-                            <li><a data-toggle="tab" href="personalInformation">Personal Information</a></li>
-                            <li class="active"><a data-toggle="tab" href="questionDetails">Questions Details</a></li>
-                            <li><a data-toggle="tab" href="challengeDetails">Challenge Details</a></li>
+                            <li><a data-toggle="tab" href="/personalInformation?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Personal Information</a></li>
+                            <li class="active"><a data-toggle="tab" href="#">Questions Details</a></li>
+                            <li><a data-toggle="tab" href="challengeDetails?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Challenge Details</a></li>
                           </ul>
                           <br><br>
                           <div class="tab-content">
@@ -72,8 +75,6 @@
 
                               <div class="form-group">
                                 <div class="col-sm-10">
-                                {{with .}}
-                                  {{range .}}
 
                                     <div class="form-group required">
                                       <label class="control-label col-sm-3" for="contact">Question : </label>
@@ -89,15 +90,14 @@
                                       </div>
                                     </div>
                                      <h6> ------------------------------------------------------------------------------------------------------------ </h6>
-
-                                  {{end}}
-                                {{end}}
                                 </div>
                               </div>
 
                             </div>
                           </div>
                         </div>
+                       {{end}}
+                         {{end}}
                     </fieldset>
                   </form>
                 </div>

@@ -6,19 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-
     <title>Improwised Admin</title>
-
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
-    <link href="../assets/css/plugins/morris.css" rel="stylesheet">
-    <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="../assets/css/morris.css" rel="stylesheet">
+    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
-
-  <body onload="getQid()">
+  <body >
     <div id="wrapper">
-      <!-- Navigation -->
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -38,71 +34,60 @@
       </nav>
       <div id="page-wrapper">
         <div class="container-fluid">
-          <!-- Page Heading -->
           <div class="row">
             <div class="col-lg-12">
               <h1 class="page-header">
                 Dashboard <small>Statistics Overview</small>
               </h1>
-<!--               <ol class="breadcrumb">
-                <li class="active">
-                  <i class="fa fa-dashboard"></i> Candidate Details
-                </li>
-              </ol> -->
+
             </div>
           </div>
-          <!-- /.row -->
           <div class="row">
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
                 <div class="card-block">
-                  <form class="form-horizontal" role="form" method="POST" action="">
-                    <fieldset>
-                      <!-- <legend></legend><br> -->
-                        <div class="container">
-                          <!-- <h2>Dynamic Tabs</h2> -->
-                          <ul class="nav nav-tabs">
-                            <li><a data-toggle="tab" href="personalInformation">Personal Information</a></li>
-                            <li><a data-toggle="tab" href="questionDetails">Questions Details</a></li>
-                            <li class="active"><a data-toggle="tab" href="challengeDetails">Challenge Details</a></li>
-                          </ul>
-                          <br><br>
-                          {{with .}}
-                            {{range .GetChallenge}}
-                              <div class="tab-content">
-                                <div id="menu2" class="tab-pane fade in active">
-                                  <div class="full-width">
-                                    <div class="field-label"><strong>Challenge : {{ .Challenge }}</strong>
+                  {{with .}}
+                    {{range .GetChallenge}}
+                      <ul class="nav nav-tabs">
+                        <li><a data-toggle="tab" href="personalInformation?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Personal Information</a></li>
+                        <li><a data-toggle="tab" href="questionDetails?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Questions Details</a></li>
+                        <li class="active"><a data-toggle="tab" href="#">Challenge Details</a></li>
+                      </ul>
+                      <div>
+                        <h3>Challenge : {{ .Challenge }}</h3>
+                      </div>
+                    {{  end }}
+                  {{  end }}
+                  <br>
+                  <br>
 
-                                    <br><br>
-                           {{ end }}
-                          {{ end }}
-                                  </div>
-                                </div> 
-                          {{with .}}
-                            {{range .GetAnswers}}
-                              <div class="form-group">
-                                <label class="control-label col-sm-2" for="attempts"></label>
-                                <pre name="attempts" id="attempts" style="width: 50%;">{{ .Answer }}</pre>
-                              </div>
-                            {{ end }}
-                          {{ end }}
-                                </div>
-                              </div>
-                            </div>
-                          <br><br><br>
-                        </div>
-                    </fieldset>
-                  </form>
+                  <div class="hello">
+                    <div>
+                      {{with .}}
+                        {{range .GetAnswers}}
+                          <div><a href="#" onclick="challengeAttempts({{.Attempt}});">Attempt - {{.Attempt}}</a></div><br>
+                        {{ end }}
+                      {{ end }}
+                    </div>
+                    <div>
+                      <textarea id="sourceCode" style="width: 50%; resize: vertical; min-height:200px;outline: none;">Hello</textarea>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <!-- /.row -->
         </div>
-          <!-- /.container-fluid -->
       </div>
-        <!-- /#page-wrapper -->
     </div>
+    <script type="text/javascript" src="../assets/js/index.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../assets/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+      $('#myTabs a').click(function (e) {
+        e.preventDefault()
+        $(this).tab('show')
+      });
+    </script>
   </body>
 </html>

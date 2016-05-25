@@ -7,9 +7,6 @@
     <title>Programming Challenge</title>
     <link href="../assets/fonts/fonts.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="../assets/css/style.css" type="text/css" media="screen" title="no title" charset="utf-8">
-    <script src="//ajaxorg.github.io/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
-     <!-- // <script src="//ajaxorg.github.io/ace-builds/src/mode-javascript.js" type="text/javascript" charset="utf-8"></script> -->
-
     <style type="text/css" media="screen">
       #body-container {
       display: block;
@@ -30,7 +27,7 @@
           <div class="span10">
             <div style="overflow:hidden; margin-left:180px;">
               <a href="http://www.improwised.com/">
-              <img a href="http://www.improwised.com/" id="company-logo" style="float:left; height:45px; width=90px; " src="../assets/img/logo.png">
+                <img a href="http://www.improwised.com/" id="company-logo" style="float:left; height:45px; width=90px; " src="../assets/img/logo.png">
               </a>
             </div>
             <div id="main-body" style="margin-top:8px; width:80%; margin-left:180px;">
@@ -43,42 +40,55 @@
                       <div class="full-width">
                         <div class="field-label"><strong>Challenge:</strong></div>
 
+                        <!-- Markdown Editor -->
+
                         <div class="container-fluid">
                           <section class="row">
                             <textarea class="col-md-6 full-height" id="pad" style="font-size: 15px; display:none;">{{range .GetChallenge}}{{.Description}}{{end}}</textarea>
                             <div class="col-md-6 full-height" id="markdown"></div>
                           </section>
- 
+
                           <script src="https://cdn.rawgit.com/showdownjs/showdown/1.0.2/dist/showdown.min.js"></script>
                           <script src="script.js"></script>
                         </div>
 
-                        <!-- <label>Select your language : &nbsp</label> -->
+                        <!-- /Markdown Editor -->
+
+                        <!-- Select Language -->
+
                         <div class="row  pull-right" style="margin-right: 0;">
                           <select name="language" id="languages" class="language" style="width: 200px;" data-placeholder= "Select Language">
                           </select>
                         </div>
+
+                        <!-- /Select Language -->
+
                         <br><br>
+
+                        <!-- Ace Editor -->
+
                         <div class="clearfix">
                           <div id="editor" rows="20" cols="100">{{range .GetSource}}{{.Answer}}{{end}}</div>
 
-                          <script> var a="javascript"</script>
 
-                          <script>
-                            var editor = ace.edit("editor");
-
-                            editor.setTheme("ace/theme/merbivore");
-                            document.getElementById('editor').style.fontSize='16px';
-                          </script>
                         </div>
+
                         <br>
+
                         <div align="right">
                           <button type="button" name="runcode" class="btn btn-default" onclick="getHrResponse(this.id)" id="runCode">Run Code</button>
                           <button type="button" name="submitcode" class="btn btn-info" id="submitCode" onclick="getHrResponse(this.id)">Submit Code</button>
                         </div>
+
+                        <!-- /Ace Editor -->
+
                         <br>
+
                       </div>
                     </fieldset>
+
+                    <!-- Messages : Compiled/Output -->
+
                     <div class="run-time full-width">
                       <pre class="error-output" id="status"><code></code></pre>
                       <div class="field-label" >Input</div>
@@ -90,6 +100,9 @@
                       <div class="field-label">Compiler Message</div>
                       <pre class="error-output" id="compilemessage"><code></code></pre>
                     </div>
+
+                    <!-- /Messages -->
+
                 </div>
                 </form>
               </div>
@@ -99,16 +112,30 @@
       </div>
     </div>
     </div>
+
+    <!-- Scripting -->
+
+    <script src="//ajaxorg.github.io/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
+    <script type="text/javascript" src="../assets/js/index.js"></script>
+    <script type="text/javascript" src="../assets/js/select2.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $(".language").select2(); ({
+          placeholder: "Select language"
+        });
+      });
+    </script>
+    <script> var a="javascript"</script>
+
+    <script>
+      var editor = ace.edit("editor");
+
+      editor.setTheme("ace/theme/merbivore");
+      document.getElementById('editor').style.fontSize='16px';
+    </script>
+
+    <!-- /Scripting -->
+
   </body>
 </html>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
-<script type="text/javascript" src="../assets/js/index.js"></script>
-<script type="text/javascript" src="../assets/js/select2.min.js"></script>
-
-<script type="text/javascript">
-  $(document).ready(function() {
-    $(".language").select2(); ({
-      placeholder: "Select language"
-    });
-  });
-</script>

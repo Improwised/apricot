@@ -11,8 +11,10 @@
 
     <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="../assets/css/sb-admin.css" rel="stylesheet">
-    <link href="../assets/css/plugins/morris.css" rel="stylesheet">
-    <link href="../assets/fonts/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <!-- <link rel="stylesheet" type="text/css" href="../assets/css/style.css"> -->
+    <link href="../assets/css/morris.css" rel="stylesheet">
+    <!-- <link rel="stylesheet" type="text/css" href="../assets/css/style.css"> -->
+    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="../assets/js/index.js"></script>
   </head>
 
@@ -63,16 +65,17 @@
                   <form class="form-horizontal" role="form" method="POST" action="">
                     <fieldset>
                       <!-- <legend></legend><br> -->
+	                {{with .}}
+	                {{range .}}
                         <div class="container">
                           <!-- <h2>Dynamic Tabs</h2> -->
                           <ul class="nav nav-tabs">
-                            <li class="active"><a data-toggle="tab" href="personalInformation">Personal Information</a></li>
-                            <li><a data-toggle="tab" href="questionDetails">Questions Details</a></li>
-                            <li><a data-toggle="tab" href="challengeDetails">Challenge Details</a></li>
+                            <li class="active"><a data-toggle="tab" href="#">Personal Information</a></li>
+                            <li><a data-toggle="tab" href="questionDetails?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}">Questions Details</a></li>
+                            <li><a data-toggle="tab" href="challengeDetails?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}">Challenge Details</a></li>
                           </ul>
                           <!--Personal Information panel -->
-                          {{with .}}
-                          {{range .}}
+
                           <div class="tab-content">
                             <div id="home" class="tab-pane fade in active">
                               <h3></h3>
@@ -121,10 +124,11 @@
                               </div>
                             </div>
                           </div>
-                          {{end}}
-                          {{end}}
+
                           <!-- /Personal Information panel -->
                         </div>
+                     {{end}}
+                     {{end}}
                     </fieldset>
                   </form>
                 </div>

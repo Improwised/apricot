@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"encoding/json"
 	"os"
+	"encoding/base64"
 	// "io/ioutil"
 	"time"
 	"strings"
@@ -61,13 +62,13 @@ type getAllQuestionsInfo struct {
 	QuestionsInfo []questionsInformation
 }
 
-// display questions in view
-func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	getAllQuestionsInfo := getAllQuestionsInfo{}
-	var buffer bytes.Buffer
-	buffer.WriteString("select id, description, deleted, sequence from questions order by sequence")
-	rows3, _ := db.Query(buffer.String())
+// display only active questions in view...
+func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Active")
+	query :="select id, description, deleted, sequence from questions where deleted is null order by sequence"
+	rows3, _ := db.Query(query)
 
+	getAllQuestionsInfo := getAllQuestionsInfo{}
 	questionsInfo := []questionsInformation{}
 	q := questionsInformation{}
 	for rows3.Next() {
@@ -80,8 +81,32 @@ func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		questionsInfo = append(questionsInfo, q)
 		checkErr(err)
 	}
-
 	getAllQuestionsInfo.QuestionsInfo = questionsInfo
+
+		t, _ := template.ParseFiles("./views/questions.html")
+		t.Execute(w, getAllQuestionsInfo)
+}
+// display all questions in view...
+func AllQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	fmt.Println("All")
+	query := "select id, description, deleted, sequence from questions order by sequence"
+	rows3, _ := db.Query(query)
+
+	getAllQuestionsInfo := getAllQuestionsInfo{}
+	questionsInfo := []questionsInformation{}
+	q := questionsInformation{}
+	for rows3.Next() {
+		err := rows3.Scan(&q.Id, &q.Description, &q.Deleted, &q.Sequence)
+		if q.Deleted != nil{
+			q.Flag = 1
+		} else if q.Deleted == nil{
+			q.Flag = 0
+		}
+		questionsInfo = append(questionsInfo, q)
+		checkErr(err)
+	}
+	getAllQuestionsInfo.QuestionsInfo = questionsInfo
+
 	t, _ := template.ParseFiles("./views/questions.html")
 	t.Execute(w, getAllQuestionsInfo)
 }
@@ -149,6 +174,16 @@ func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			q.Flag = 0
 		}
 		questionsInfo = append(questionsInfo, q)
+		// decoded,err := base64.StdEncoding.DecodeString(questionsInfo[0].Description)
+		// questionsInfo = append(questionsInfo, decoded)
+
+		// questionsInfo = append(questionsInfo, q.Description)
+
+		// fmt.Println(string(decoded))
+		// if err != nil {
+		// 	fmt.Println("decode error:", err)
+		// 	return
+		// }
 		checkErr(err)
 	}
 
@@ -232,7 +267,7 @@ func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		user.DateOnly = s[0]
 		//================================
 
-		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) > 0 AND  candidateid="+user.Id)//+ user.Id)
+		stmt2 := fmt.Sprintf("SELECT count(id) FROM questions_answers WHERE length(answer) > 0 AND  candidateid="+user.Id)
 		rows2, _ := db.Query(stmt2)
 		for rows2.Next() {
 			rows2.Scan(&user.QuestionsAttended)
@@ -248,8 +283,12 @@ type ChallengeInfo struct {
 }
 
 func newChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	description := r.FormValue("desc")
+	desc := r.FormValue("desc")
 
+	//Encrypt the description to store in database with special charecters
+	description := base64.StdEncoding.EncodeToString([]byte(desc))
+
+	fmt.Println(description)
 	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
 	stmt2.Query(description)
 
@@ -266,14 +305,15 @@ func testcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "programmingtest", 301)
 }
 
-var id string
+var Id GeneralInfo// candidate id to use for getting his information ..
+//will display personal information of candidates..
 func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	id = r.FormValue("id")
+	Id.Id = r.FormValue("id")
 
 	QuestionsAttended := r.FormValue("queAttempt")
 	ChallengeAttempts := r.FormValue("challengeAttmpt")
 
-	stmt2 := fmt.Sprintf("SELECT name, email, contact, degree, college, yearofcompletion from candidates where id ="+id)
+	stmt2 := fmt.Sprintf("SELECT name, email, contact, degree, college, yearofcompletion from candidates where id ="+Id.Id)
 	rows3, _ := db.Query(stmt2)
 
 	UsersInfo := []GeneralInfo{}
@@ -283,6 +323,7 @@ func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request)
 		rows3.Scan(&user.Name, &user.Email, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion)
 		user.ChallengeAttempts = ChallengeAttempts
 		user.QuestionsAttended = QuestionsAttended
+		user.Id = Id.Id
 		UsersInfo = append(UsersInfo, user)
 	}
 	t, _ := template.ParseFiles("./views/personalInformation.html")
@@ -293,14 +334,19 @@ type GetQuestions struct {
 	Questions string
 	Id string
 	Ans  string
+	QuestionAttempted string
+	ChallengeAttempts string
 }
-
+//will display questions and answer given by candidates..
 func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	QuestionsAttended := r.FormValue("queAttempt")
+	ChallengeAttempts := r.FormValue("challengeAttmpt")
+
 	var query = "SELECT questions.description,questions_answers.answer"
 		query += " FROM questions"
 		query += " INNER JOIN questions_answers"
 		query += " ON questions.id=questions_answers.questionsid"
-		query += " where candidateid = "+ id +""
+		query += " where candidateid = "+ Id.Id +""
 		query += " ORDER BY questions.sequence"
 
 	rows, _ := db.Query(query)
@@ -308,6 +354,9 @@ func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	qinfo := GetQuestions{}
 	for rows.Next() {
 		err := rows.Scan(&qinfo.Questions, &qinfo.Ans)
+		qinfo.QuestionAttempted = QuestionsAttended
+		qinfo.ChallengeAttempts = ChallengeAttempts
+		qinfo.Id = Id.Id
 		questionsInfo = append(questionsInfo, qinfo)
 		checkErr(err)
 	}
@@ -317,70 +366,83 @@ func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 type GetChallenge struct {
 	Challenge string
+	QuestionAttempted string
+	ChallengeAttempts string
+	Id string
 }
 
 type GetAnswers struct {
 	Answer string
+	Attempt string
 }
 
 type AllDetail struct {
 	GetChallenge []GetChallenge
 	GetAnswers []GetAnswers
 }
-
+//will display answer of challenge...
 func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
+	QuestionsAttended := r.FormValue("queAttempt")
+	ChallengeAttempts := r.FormValue("challengeAttmpt")
 
-	stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
-	rows1, _ := stmt1.Query(id)
+	stmt1, _ := db.Prepare("select description from challenges where id=(select challengeid from sessions where candidateid= ($1))")
+	rows1, _ := stmt1.Query(Id.Id)
 	challenge := []GetChallenge{}
 	q := GetChallenge{}
 	for rows1.Next() {
 		err := rows1.Scan(&q.Challenge)
+		q.QuestionAttempted = QuestionsAttended
+		q.ChallengeAttempts = ChallengeAttempts
+		q.Id = Id.Id
 		challenge = append(challenge, q)
 		checkErr(err)
 	}
-	stmt2, _ := db.Prepare("select answer from challenge_answers where sessionid = (select id from sessions where candidateid=($1)) order by attempts")
-	rows2, _ := stmt2.Query(id)
+	stmt2, _ := db.Prepare("select answer,attempts from challenge_answers where sessionid = (select id from sessions where candidateid=($1)) order by attempts")
+	rows2, _ := stmt2.Query(Id.Id)
 	answer := []GetAnswers{}
 	A := GetAnswers{}
 	for rows2.Next() {
-		err := rows2.Scan(&A.Answer)
+		err := rows2.Scan(&A.Answer,&A.Attempt)
 		answer = append(answer, A)
 		checkErr(err)
+		fmt.Println("******",A.Attempt)
 	}
 	allDetails := AllDetail{}
 	allDetails.GetChallenge = challenge
 	allDetails.GetAnswers = answer
 
-	t, _ := template.ParseFiles("./views/challengeDetails.htmls")
+
+	t, _ := template.ParseFiles("./views/challengeDetails.html")
 	t.Execute(w, allDetails)
 }
 
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
-	// var defaultCaseFlag = 0
-	// var defaultcase string ="false"
-
 	if r.FormValue("qId") != "" {
 		input := r.FormValue("input")
 		output := r.FormValue("output")
 
-		stmt, _ := db.Prepare("select challengeId from challenge_cases where challengeid = ($1) ")
+		//============first entry of testcase will be set as default test case of perticualr challenge =========
+		stmt, _ := db.Prepare("select COUNT(challengeid) from challenge_cases where challengeid = ($1) ")
 		rows, err := stmt.Query(challengeId)
-		panic(err)
-		ID := []GetChallenge{}
-		q := GetChallenge{}
+		if err != nil {
+			panic(err)
+		}
+		var count int
 		for rows.Next() {
-			err := rows.Scan(&q.Challenge)
-			ID = append(ID, q)
+			err := rows.Scan(&count)
 			checkErr(err)
 		}
-		// if(q.Challenge == ""){
-		// 	fmt.Println("*********")
-		// }
+		var defaultCase bool
+		if(count == 0){
+			defaultCase = true
+		}else {
+			defaultCase = false
+		}
+		//===============================================================================================================
 
-		stmt1, _ := db.Prepare("insert into challenge_cases(challengeid, input, output, created) values ($1, $2, $3,NOW());")
-		stmt1.Query(challengeId, input, output)
+		stmt1, _ := db.Prepare("insert into challenge_cases(challengeid, input, output, defaultCase, created) values ($1, $2, $3, $4, NOW());")
+		stmt1.Query(challengeId, input, output, defaultCase)
 		http.Redirect(w, r, "programmingtest", 301)
 	} else {
 		qId := r.URL.Query().Get("qid")
@@ -426,6 +488,8 @@ if(year =="All"){//will search for all the year passing out candidates..
 				stmt1 = fmt.Sprintf(query+" AND (c.college ILIKE '%%%s%%')  group by c.id order by c.id asc ",college)
 				}else if(college == ""){//will search for degree only..
 					stmt1 = fmt.Sprintf(query+" AND (c.degree ILIKE '%%%s%%') group by c.id order by c.id asc ",degree)
+					}else{
+						stmt1 = fmt.Sprintf(query+" AND ((c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') ) group by c.id order by c.id asc ",degree,college)
 					}
 
 	} else if(degree == ""){
@@ -436,7 +500,7 @@ if(year =="All"){//will search for all the year passing out candidates..
 						}
 
 	} else if(college == ""){//will search for name and degree both field....
-		stmt1 = fmt.Sprintf(query+" AND ((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree)
+		stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree)
 		} else {//will search for all the fields..
 			stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,degree)
 			}
@@ -449,6 +513,8 @@ if(year =="All"){//will search for all the year passing out candidates..
 				stmt1 = fmt.Sprintf(query+" AND ((c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",college,year)
 				}else if(college == ""){//will search for degree only with specific year..
 					stmt1 = fmt.Sprintf(query+" AND ((c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,year)
+					}else{
+						stmt1 = fmt.Sprintf(query+" AND ((c.degree ILIKE '%%%s%%') AND (c.college ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",degree,college,year)
 					}
 
 	} else if(degree == ""){
@@ -459,7 +525,7 @@ if(year =="All"){//will search for all the year passing out candidates..
 						}
 
 	} else if(college == ""){//will search for name and degree both field with specific year....
-		stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%')) AND ((c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,year)
+		stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,degree,year)
 		} else {//will search for all the fields with specific year..
 			stmt1 = fmt.Sprintf(query+" AND (((c.name ILIKE '%%%s%%') OR (c.email ILIKE '%%%s%%')) AND (c.college ILIKE '%%%s%%') AND (c.degree ILIKE '%%%s%%') AND (c.yearOfCompletion::text LIKE '%%%s%%')) group by c.id order by c.id asc ",name,name,college,degree,year)
 			}
@@ -506,6 +572,32 @@ if(year =="All"){//will search for all the year passing out candidates..
 	w.Write([]byte(b))//set response...
 }
 
+//will return the perticullar attempted challenge source code
+func challengeAttemptHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+
+	candidateId := r.FormValue("candidateID")
+	attemptNo := r.FormValue("attemptNo")
+
+	var source string
+	stmt,_ :=db.Prepare("SELECT answer FROM challenge_answers WHERE attempts=($1) AND sessionid = (select id from sessions where candidateid=($2) AND status= 0 )")
+	rows, _ := stmt.Query(attemptNo, candidateId)
+
+	for rows.Next() {
+			err := rows.Scan(&source)
+			checkErr(err)
+		}
+		fmt.Println("-->",source)
+	//========to convert response to JSON ==========
+	b, err := json.Marshal(source)
+	if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+	}
+	//==========================
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+}
+
 func main() {
 	db = setupDB()
 	defer db.Close()
@@ -513,7 +605,8 @@ func main() {
 	goji.Handle("/", candidateHandler)
 	goji.Handle("/search", searchHandler)
 	goji.Handle("/candidates", candidateHandler)
-	goji.Get("/questions", questionsHandler)
+	goji.Handle("/questions", ActiveQuestionsHandler)
+	goji.Handle("/allQuestions", AllQuestionsHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
 	goji.Handle("/editquestion", editQuesionHandler)
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
@@ -527,6 +620,7 @@ func main() {
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/newChallenge", newChallengeHandler)
+	goji.Handle("/challengeAttempt", challengeAttemptHandler)
 
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/jquery/", http.StripPrefix("/assets/jquery/", http.FileServer(http.Dir("assets/jquery"))))

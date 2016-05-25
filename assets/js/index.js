@@ -260,6 +260,7 @@ function getLanguages() {
 
 function getid(){
 	var elem = document.getElementById("description").value
+	alert(elem);
 		if (window.XMLHttpRequest) {
 		xmlhttp=new XMLHttpRequest();
 	}
@@ -382,7 +383,7 @@ function showDiv1() {
 }
 
 //Pagination..............
-$('table.pagination').each(function() {
+$('table.paginated').each(function() {
     var currentPage = 0;
     var numPerPage = 10;
     var $table = $(this);
@@ -431,3 +432,53 @@ $('table.pagination').each(function() {
     });
     $table.trigger('repaginate');
 });
+
+// for append years from 2010 to 2030 in year select box...
+(function() {
+    var elm = document.getElementById('year'),
+        df = document.createDocumentFragment();
+    for (var i = 2010; i <= 2030; i++) {
+        var option = document.createElement('option');
+        option.value = i;
+        option.appendChild(document.createTextNode(i));
+        df.appendChild(option);
+    }
+    elm.appendChild(df);
+}());
+
+//shows data either all or active
+function showQuestionData(){
+	url = window.location.href.toString().split(window.location.host)[1];
+	if(url == "/questions"){
+		document.getElementById("data").innerHTML="Active";
+	}else{
+		document.getElementById("data").innerHTML="All";
+	}
+
+}
+
+//will return the source code of challenge according to challenge attempt..
+function challengeAttempts(attemptNo){
+	url = window.location.href;
+	var hash;
+	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+	hash = hashes[0].split('=');
+	candidateID = hash[1];
+
+	$.ajax({
+			url: "challengeAttempt",
+			type: 'post',
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				candidateID : candidateID,
+				attemptNo : attemptNo
+			},
+		success: function (response) {
+			$("#sourceCode").val(" ");
+			$("#sourceCode").val(response);
+		},
+		error: function (error) {
+			console.log(error);
+		}
+	});
+}
