@@ -10,6 +10,7 @@ import (
 	"html/template"
 	"encoding/json"
 	"time"
+	"encoding/base64"
 	"os"
 	"math/rand"
 	"bytes"
@@ -361,7 +362,6 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 		buffer.WriteString(" set answer=")
 		buffer.WriteString("'" + data + "'")
 		buffer.WriteString(",modified=NOW() where questionsid="+ id)
-		//  buffer.WriteString("'" + id + "'")
 		buffer.WriteString(" AND")
 		buffer.WriteString(" candidateid=(select candidateId from sessions where hash=")
 		buffer.WriteString("'" + hash + "'")
@@ -380,7 +380,6 @@ func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
 }
 
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	processFormData(w, r)
 	hash := r.FormValue("hash")
 
@@ -412,12 +411,11 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	// ===============TODO check hash expired or not...===================
 	hash := r.URL.Query().Get("key")
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-
 	if(len(hash)!=40 || hash == ""){//chek whether hash modified by candidate..
 		http.Redirect(w, r, "/index", 302)
 	}
 
+	//will check whether hash expired or not...===========
 	query, _ := db.Prepare("SELECT expired,status FROM sessions where hash = ($1)")
 	result, _ := query.Query(hash)
 
@@ -435,6 +433,7 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/expired", 302)
 		return
 	}
+	//==============================================================
 
 	source := r.FormValue("source")
 	key := r.FormValue("hash")
@@ -486,11 +485,31 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	stmt1, _ := db.Prepare("select description from challenges where id = (select challengeId from sessions where hash = ($1))")
 	rows1,_ := stmt1.Query(hash)
 
+	var encodedChallenge string
 	for rows1.Next() {
-		err := rows1.Scan(&cInfo.Description)
-		challengeInfo = append(challengeInfo, cInfo)
+		err := rows1.Scan(&encodedChallenge)
 		checkErr(err)
 	}
+	//Decode the encrypted challenge from database...
+	decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+	if err != nil {
+		fmt.Println("decode error:", err)
+		return
+	}
+	//==================================================
+
+	//convert decrypted challenge to string from byte and store it into structure====================
+	var m = map[string]*struct{ challenge string }{
+	"foo": {"Challenge"},
+	}
+
+	m["foo"].challenge = string(decodedChallenge)
+
+	cInfo.Description = m["foo"].challenge
+	//======================================================
+
+	challengeInfo = append(challengeInfo, cInfo)
+
 	//getting last answer for perticullar challege
 	var query1 = "select answer from challenge_answers"
 			query1 += " where sessionid="
@@ -514,16 +533,6 @@ func challengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllChallengesInfo.GetSource = sourcecode
 	t, _ := template.ParseFiles("./views/challenge.html")
 	t.Execute(w, getAllChallengesInfo)
-}
-
-func apihandler(c web.C, w http.ResponseWriter, r *http.Request){
-	if origin := r.Header.Get("Host"); origin != "" {
-		w.Header().Set("Access-Control-Allow-Origin", origin)
-	}
-	w.Header().Set("Access-Control-Allow-Origin" , "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
-	t, _ := template.ParseFiles("./views/hrapi.html")
-	t.Execute(w, t)
 }
 
 func processFormData(w http.ResponseWriter, r *http.Request)  {
@@ -870,7 +879,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 			query4.Exec(sessionid,testcases[0],outputResponse[0],source,status[0])
 			// =========================================
 
-			//will store all the test cases iƒn databse for a source code======================
+			//will store all the test cases iƒ databse for a source code======================
 			for i:=1;i<length;i++{
 				query5, _ := db.Prepare("insert into challenge_attempts(sessionid,input,output,status) values($1,$2,$3,$4)")
 				query5.Exec(sessionid,testcases[i],outputResponse[i],status[i])
@@ -902,7 +911,6 @@ func main() {
 	defer db.Close()
 
 	goji.Get("/index", indexHandler)
-	goji.Handle("/hrapi", apihandler)
 	goji.Get("/", indexHandler)
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
@@ -912,6 +920,7 @@ func main() {
 	goji.Handle("/confirmation", confirmationPage)
 	goji.Handle("/thankYouPage", thankYouHandler)
 	goji.Handle("/expired", expiredPage)
+
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))

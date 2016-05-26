@@ -58,7 +58,6 @@ function confirmMsg() {
 
 //getting email and passing as hidden
 function emailHidden() {
-	// console.log("called");
 	url = window.location.search.substring(1);
 	var hash;
 	var myJson = {};
@@ -68,9 +67,7 @@ function emailHidden() {
 		hash = hashes[i].split('=');
 		myJson[hash[0]] = hash[1];
 	}
-
 	document.getElementById("hash").value = myJson[hash[0]];
-	console.log(myJson[hash[0]]);
 }
 
 function getQid() {
@@ -259,8 +256,7 @@ function getLanguages() {
 }
 
 function getid(){
-	var elem = document.getElementById("description").value
-	alert(elem);
+	var elem = document.getElementById("pad").value
 		if (window.XMLHttpRequest) {
 		xmlhttp=new XMLHttpRequest();
 	}
@@ -474,8 +470,8 @@ function challengeAttempts(attemptNo){
 				attemptNo : attemptNo
 			},
 		success: function (response) {
-			$("#sourceCode").val(" ");
-			$("#sourceCode").val(response);
+			$("#editor").html(" ");
+			$('#editor').html(response);
 		},
 		error: function (error) {
 			console.log(error);

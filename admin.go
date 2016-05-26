@@ -64,7 +64,6 @@ type getAllQuestionsInfo struct {
 
 // display only active questions in view...
 func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Active")
 	query :="select id, description, deleted, sequence from questions where deleted is null order by sequence"
 	rows3, _ := db.Query(query)
 
@@ -88,7 +87,6 @@ func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 // display all questions in view...
 func AllQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	fmt.Println("All")
 	query := "select id, description, deleted, sequence from questions order by sequence"
 	rows3, _ := db.Query(query)
 
@@ -161,29 +159,40 @@ func addQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
-	buffer.WriteString("select id, description, deleted from challenges")
+	buffer.WriteString("select id, description, deleted from challenges order by id")
 	rows3, _ := db.Query(buffer.String())
 
 	questionsInfo := []questionsInformation{}
 	q := questionsInformation{}
+	var encodedChallenge string
+
 	for rows3.Next() {
-		err := rows3.Scan(&q.Id, &q.Description, &q.Deleted)
+		err := rows3.Scan(&q.Id, &encodedChallenge, &q.Deleted)
 		if q.Deleted != nil{
 			q.Flag = 1
 		} else if q.Deleted == nil{
 			q.Flag = 0
 		}
+
+		//Decode the encrypted challenge from database...
+		decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+		if err != nil {
+			fmt.Println("decode error:", err)
+			return
+		}
+		//==================================================
+
+		//convert decrypted challenge to string from byte and store it into structure====================
+		var m = map[string]*struct{ challenge string }{
+		"foo": {"Challenge"},
+		}
+
+		m["foo"].challenge = string(decodedChallenge)
+
+		q.Description = m["foo"].challenge
+		//======================================================
+
 		questionsInfo = append(questionsInfo, q)
-		// decoded,err := base64.StdEncoding.DecodeString(questionsInfo[0].Description)
-		// questionsInfo = append(questionsInfo, decoded)
-
-		// questionsInfo = append(questionsInfo, q.Description)
-
-		// fmt.Println(string(decoded))
-		// if err != nil {
-		// 	fmt.Println("decode error:", err)
-		// 	return
-		// }
 		checkErr(err)
 	}
 
@@ -207,9 +216,14 @@ func deleteChanllengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	if r.FormValue("qId") != "" {
 		description := r.FormValue("description")
+
+		//Encrypt the description to store in database with special charecters
+		encodeChallenge := base64.StdEncoding.EncodeToString([]byte(description))
+		//==================================
+
 		qId := r.FormValue("qId")
 		stmt1, _ := db.Prepare("update challenges set description = ($1) where id = ($2)")
-		stmt1.Query(description, qId)
+		stmt1.Query(encodeChallenge, qId)
 		http.Redirect(w, r, "programmingtest", 301)
 	} else {
 		qId := r.URL.Query().Get("qid")
@@ -217,8 +231,29 @@ func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		rows1, _ := stmt1.Query(qId)
 		questions := []questionsInformation{}
 		q := questionsInformation{}
+		var encodedChallenge string
 		for rows1.Next() {
-			err := rows1.Scan(&q.Description)
+			err := rows1.Scan(&encodedChallenge)
+
+			//Decode the encrypted challenge from database...
+			decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+			if err != nil {
+				fmt.Println("decode error:", err)
+				return
+			}
+			//==================================================
+
+			//convert decrypted challenge to string from byte and store it into structure====================
+			var m = map[string]*struct{ challenge string }{
+			"foo": {"Challenge"},
+			}
+
+			m["foo"].challenge = string(decodedChallenge)
+
+			q.Description = m["foo"].challenge
+			//======================================================
+
+
 			questions = append(questions, q)
 			checkErr(err)
 		}
@@ -287,8 +322,8 @@ func newChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	//Encrypt the description to store in database with special charecters
 	description := base64.StdEncoding.EncodeToString([]byte(desc))
+	//==================================
 
-	fmt.Println(description)
 	stmt2, _ := db.Prepare("insert into challenges (description, created) values($1, NOW())")
 	stmt2.Query(description)
 
@@ -389,14 +424,33 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 	rows1, _ := stmt1.Query(Id.Id)
 	challenge := []GetChallenge{}
 	q := GetChallenge{}
+	var encodedChallenge string
 	for rows1.Next() {
-		err := rows1.Scan(&q.Challenge)
-		q.QuestionAttempted = QuestionsAttended
-		q.ChallengeAttempts = ChallengeAttempts
-		q.Id = Id.Id
-		challenge = append(challenge, q)
+		err := rows1.Scan(&encodedChallenge)
 		checkErr(err)
 	}
+
+	//Decode the encrypted challenge from database...
+	decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+	if err != nil {
+		fmt.Println("decode error:", err)
+		return
+	}
+	//==================================================
+
+	//convert decrypted challenge to string from byte and store it into structure====================
+	var m = map[string]*struct{ challenge string }{
+		"foo": {"Challenge"},
+	}
+
+	m["foo"].challenge = string(decodedChallenge)
+
+	q.Challenge = m["foo"].challenge
+	q.QuestionAttempted = QuestionsAttended
+	q.ChallengeAttempts = ChallengeAttempts
+	q.Id = Id.Id
+	challenge = append(challenge, q)
+
 	stmt2, _ := db.Prepare("select answer,attempts from challenge_answers where sessionid = (select id from sessions where candidateid=($1)) order by attempts")
 	rows2, _ := stmt2.Query(Id.Id)
 	answer := []GetAnswers{}
@@ -405,7 +459,6 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 		err := rows2.Scan(&A.Answer,&A.Attempt)
 		answer = append(answer, A)
 		checkErr(err)
-		fmt.Println("******",A.Attempt)
 	}
 	allDetails := AllDetail{}
 	allDetails.GetChallenge = challenge
@@ -586,7 +639,6 @@ func challengeAttemptHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			err := rows.Scan(&source)
 			checkErr(err)
 		}
-		fmt.Println("-->",source)
 	//========to convert response to JSON ==========
 	b, err := json.Marshal(source)
 	if err != nil {
