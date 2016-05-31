@@ -342,19 +342,36 @@ ul.alert-dropdown {
   border: 1px solid black;
   border-left: 0px;
   padding: 15px;
-  overflow: scroll;
+  overflow: auto;
 }
 
 
 /*Markdown Editor*/
-.hello{
+.mark{
   display: flex;
 }
 
-.hello > div:first-child{
-  flex-grow:1;
+.mark > div:first-child{
+  flex-grow: 1;
   text-align: center;
 }
-.hello > div:last-child{
-  flex-grow:10;
+.mark > div:last-child{
+  flex-grow: 10;
+}
+
+.center {
+  text-align: center;
+}
+
+/*Pagination*/
+div.pager span {
+  position: relative;
+  padding: 6px 12px;
+  margin-left: -1px;
+  line-height: 1.42857143;
+  color: #337ab7;
+  text-decoration: none;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  cursor: -webkit-grab;
 }
