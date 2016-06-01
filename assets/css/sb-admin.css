@@ -357,6 +357,7 @@ ul.alert-dropdown {
 }
 .mark > div:last-child{
   flex-grow: 10;
+  white-space: pre-wrap;
 }
 
 .center {
@@ -374,4 +375,8 @@ div.pager span {
   background-color: #fff;
   border: 1px solid #ddd;
   cursor: -webkit-grab;
+}
+
+.multilineTestcases {
+   white-space: pre-wrap;
 }

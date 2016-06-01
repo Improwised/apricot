@@ -222,11 +222,13 @@ func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		//==================================
 
 		qId := r.FormValue("qId")
+
 		stmt1, _ := db.Prepare("update challenges set description = ($1) where id = ($2)")
 		stmt1.Query(encodeChallenge, qId)
 		http.Redirect(w, r, "programmingtest", 301)
 	} else {
 		qId := r.URL.Query().Get("qid")
+		fmt.Println("=======",qId)
 		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
 		rows1, _ := stmt1.Query(qId)
 		questions := []questionsInformation{}
@@ -253,12 +255,12 @@ func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			q.Description = m["foo"].challenge
 			//======================================================
 
-
 			questions = append(questions, q)
 			checkErr(err)
+
+			t, _ := template.ParseFiles("./views/editchallenge.html")
+			t.Execute(w, questions)
 		}
-		t, _ := template.ParseFiles("./views/editchallenge.html")
-		t.Execute(w, questions)
 	}
 }
 
@@ -468,50 +470,59 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles("./views/challengeDetails.html")
 	t.Execute(w, allDetails)
 }
+type ChallengeCases struct{
+	Id int
+	Input string
+	Output string
+	Default string
+	Challenge string
+}
+type ChallengeDesc struct{
+	Challenge string
+}
+type AllDetails struct{
+	ChallengeCases []ChallengeCases
+	ChallengeDesc ChallengeDesc
+}
 
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("qId") != "" {
+
+	var qId string = r.URL.Query().Get("qid")
+
+	if qId != "" {
+		challengeId = qId
+		challenge := ChallengeDesc{}
+		err := db.QueryRow("select description from challenges where id = $1", challengeId).Scan(&challenge.Challenge)
+		checkErr(err)
+
+		stmt1, _ := db.Prepare("select id, input, output, defaultcase from challenge_cases where challengeid = ($1)")
+		rows1, _ := stmt1.Query(challengeId)
+
+		challengeCases := []ChallengeCases{}
+		q := ChallengeCases{}
+
+		for rows1.Next() {
+			err := rows1.Scan(&q.Id, &q.Input, &q.Output, &q.Default)
+			checkErr(err)
+			challengeCases = append(challengeCases, q)
+		}
+		allDetails := AllDetails{}
+		allDetails.ChallengeCases = challengeCases
+		allDetails.ChallengeDesc = challenge
+		fmt.Println("-->",allDetails)
+
+		t, _ := template.ParseFiles("./views/addTestCases.html")
+		t.Execute(w, allDetails)
+
+	} else {
 		input := r.FormValue("input")
 		output := r.FormValue("output")
 
-		//============first entry of testcase will be set as default test case of perticualr challenge =========
-		stmt, _ := db.Prepare("select COUNT(challengeid) from challenge_cases where challengeid = ($1) ")
-		rows, err := stmt.Query(challengeId)
-		if err != nil {
-			panic(err)
-		}
-		var count int
-		for rows.Next() {
-			err := rows.Scan(&count)
-			checkErr(err)
-		}
-		var defaultCase bool
-		if(count == 0){
-			defaultCase = true
-		}else {
-			defaultCase = false
-		}
-		//===============================================================================================================
-
 		stmt1, _ := db.Prepare("insert into challenge_cases(challengeid, input, output, defaultCase, created) values ($1, $2, $3, $4, NOW());")
-		stmt1.Query(challengeId, input, output, defaultCase)
-		http.Redirect(w, r, "programmingtest", 301)
-	} else {
-		qId := r.URL.Query().Get("qid")
-		challengeId = qId
+		stmt1.Query(challengeId, input, output, false)
 
-		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
-		rows1, _ := stmt1.Query(qId)
-		questions := []questionsInformation{}
-		q := questionsInformation{}
-		for rows1.Next() {
-			err := rows1.Scan(&q.Description)
-			checkErr(err)
-			questions = append(questions, q)
-		}
-		t, _ := template.ParseFiles("./views/addTestCases.html")
-		t.Execute(w, questions)
+		http.Redirect(w, r,  "addTestCases?qid=" + challengeId , 301)
 	}
 }
 

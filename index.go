@@ -128,7 +128,7 @@ type Questions struct {
 }
 
 func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	email := r.URL.Query().Get("email")
+	email := r.FormValue("email")
 
 	//Check whether email empty or not
 	if email == "" {
@@ -211,7 +211,7 @@ func indexHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 				now := time.Now()
 				sevenDay := time.Hour * 24 * 7
 				time := now.Add(sevenDay)
-				stmt3 := "UPDATE sessions SET status=0 WHERE candidateId=" + candidateid[0].Id
+				stmt3 := "UPDATE sessions SET status = 0 WHERE candidateId=" + candidateid[0].Id
 				db.Query(stmt3)
 
 				query1, _ := db.Prepare("INSERT INTO sessions (hash, candidateId, created, expired, challengeId, status) VALUES($1, $2, NOW(), $3, $4, $5)")
@@ -910,8 +910,8 @@ func main() {
 	db = setupDB()
 	defer db.Close()
 
-	goji.Get("/index", indexHandler)
-	goji.Get("/", indexHandler)
+	goji.Handle("/index", indexHandler)
+	goji.Post("/", indexHandler)
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
 	goji.Handle("/challenge", challengeHandler)
