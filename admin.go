@@ -228,7 +228,7 @@ func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "programmingtest", 301)
 	} else {
 		qId := r.URL.Query().Get("qid")
-		fmt.Println("=======",qId)
+
 		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
 		rows1, _ := stmt1.Query(qId)
 		questions := []questionsInformation{}
@@ -489,12 +489,29 @@ var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	var qId string = r.URL.Query().Get("qid")
-
 	if qId != "" {
 		challengeId = qId
-		challenge := ChallengeDesc{}
-		err := db.QueryRow("select description from challenges where id = $1", challengeId).Scan(&challenge.Challenge)
+		Challenge := ChallengeDesc{}
+		var encodedChallenge string
+		err := db.QueryRow("select description from challenges where id = $1", challengeId).Scan(&encodedChallenge)
 		checkErr(err)
+
+		//Decode the encrypted challenge from database...
+		decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+		if err != nil {
+			fmt.Println("decode error:", err)
+			return
+		}
+		//==================================================
+
+		//convert decrypted challenge to string from byte and store it into structure====================
+		var m = map[string]*struct{ challenge string }{
+			"foo": {"Challenge"},
+		}
+
+		m["foo"].challenge = string(decodedChallenge)
+
+		Challenge.Challenge = m["foo"].challenge
 
 		stmt1, _ := db.Prepare("select id, input, output, defaultcase from challenge_cases where challengeid = ($1)")
 		rows1, _ := stmt1.Query(challengeId)
@@ -509,8 +526,7 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 		allDetails := AllDetails{}
 		allDetails.ChallengeCases = challengeCases
-		allDetails.ChallengeDesc = challenge
-		fmt.Println("-->",allDetails)
+		allDetails.ChallengeDesc = Challenge
 
 		t, _ := template.ParseFiles("./views/addTestCases.html")
 		t.Execute(w, allDetails)
@@ -661,6 +677,43 @@ func challengeAttemptHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(b))//set response...
 }
 
+func deleteTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	challengeId := r.FormValue("challengeId")
+	testCaseId := r.FormValue("testCaseId")
+
+	stmt,_ :=db.Prepare("DELETE from challenge_cases WHERE challengeid = ($1) AND id = ($2)")
+	_, err := stmt.Query(challengeId, testCaseId)
+	checkErr(err)
+}
+
+func DefaultTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	testCaseId := r.FormValue("testCaseId")
+	challengeId := r.FormValue("challengeId")
+	var defaultCase string
+
+	err := db.QueryRow("select id from challenge_cases where challengeid = ($1) AND defaultcase = true", challengeId).Scan(&defaultCase)
+
+	if(err == nil){
+		stmt,_ :=db.Prepare("UPDATE challenge_cases SET defaultcase = false WHERE id = ($1)")
+		_, err := stmt.Query(defaultCase)
+		checkErr(err)
+	}
+	stmt1,_ :=db.Prepare("UPDATE challenge_cases SET defaultcase = true WHERE id = ($1)")
+	_, errr := stmt1.Query(testCaseId)
+	checkErr(errr)
+
+	//========to convert response to JSON ==========
+	b, err := json.Marshal(defaultCase)
+	if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+	}
+	//==========================
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+}
+
+
 func main() {
 	db = setupDB()
 	defer db.Close()
@@ -678,12 +731,14 @@ func main() {
 	goji.Handle("/questionDetails", questionDetailsHandler)
 	goji.Handle("/challengeDetails", challengeDetailsHandlers)
 	goji.Handle("/addchallenge", addChallengeHandler)
-	goji.Get("/testcase", testcaseHandler)
+	goji.Handle("/testcase", testcaseHandler)
 	goji.Handle("/addTestCases", addTestCase)
 	goji.Handle("/programmingtest", challengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/newChallenge", newChallengeHandler)
 	goji.Handle("/challengeAttempt", challengeAttemptHandler)
+	goji.Post("/deleteTestCase", deleteTestcaseHandler)
+	goji.Post("/setDefaultTestcase", DefaultTestcaseHandler)
 
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/jquery/", http.StripPrefix("/assets/jquery/", http.FileServer(http.Dir("assets/jquery"))))

@@ -37,7 +37,7 @@ function autoSave(data,id) {
 }
 
 function retriveData(str,id, hash) {
-
+	console.log(str);
 	if (str==""){
 		return;
 	}
@@ -106,6 +106,7 @@ function deleteQuestion(qId, element) {
 }
 
 function deleteChallenge(qId, element) {
+
 	if (window.XMLHttpRequest) {
 		xmlhttp=new XMLHttpRequest();
 	}
@@ -113,14 +114,14 @@ function deleteChallenge(qId, element) {
 		status = "no"
 		element.src ="../assets/img/true.png";
 		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
-		element.src="../assets/img/false.png";
+		element.src="../assets/img/true.png";
 		flag = 0;
 	}
 	else if (flag == 0) {
 		status = "yes"
 		element.src="../assets/img/false.png";
 		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
-		element.src ="../assets/img/true.png";
+		element.src ="../assets/img/false.png";
 		flag = 1;
 
 	}
@@ -145,7 +146,6 @@ function getHrResponse(id) {
 
 	var elem = document.getElementById("status")
 	elem.style.color = "Orange"
-	elem.style.backgroundColor = "#FCF5D8"
 	elem.style.fontWeight = "900"
 
 	$('#status').html(" ");
@@ -173,7 +173,7 @@ function getHrResponse(id) {
 		var elem = document.getElementById("compilemessage")
 		var elem2 = document.getElementById("status")
 		testcaseStatus = response[4]
-
+		elem2.style.backgroundColor = "#90EE90"
 		$('#status').html(" ");
 
 		$('#input').html(response[0]);
@@ -210,7 +210,12 @@ function getHrResponse(id) {
 		}
 	},
 	error: function (response) {
-		console.log("error");
+		var elem2 = document.getElementById("status")
+		$('#status').html(" ");
+		elem2.style.backgroundColor = "#FCF5D8"
+		elem2.style.color = "Red"
+		elem2.style.fontWeight = "900"
+		$('#status').html("Something went wrong..! Try again...");
 	},
 	});
 }
@@ -251,6 +256,7 @@ function getLanguages() {
 	    convertTextAreaToMarkdown();
 		},
 		error: function (response) {
+
 		},
 	});
 }
@@ -295,13 +301,16 @@ $(document).ready(function() {
 		else {
 			 aceLang = lang.toLowerCase();
 		}
-		var src = '//ajaxorg.github.io/ace-builds/src/mode-';
-		src += aceLang;
+		// var src = '//ajaxorg.github.io/ace-builds/src/mode-';
+		// var src = '../vendor/github.com/ajaxorg/ace/lib/ace/mode/';
+		// src += aceLang;
 
 		var s = document.createElement("script");
 
 		s.type = "text/javascript";
 		s.src = '//ajaxorg.github.io/ace-builds/src/mode-'+ aceLang +'.js';//CDN Path..
+		// s.src = '../vendor/github.com/ajaxorg/ace/lib/ace/mode/java.js';//local Path..
+		// console.log(s.src);
 		$("head").append(s);
 
 		var editor = ace.edit("editor");
@@ -478,3 +487,60 @@ function challengeAttempts(attemptNo){
 		}
 	});
 }
+
+function deleteTestCase(Id){
+	var conformation = confirm('Are You Sure You Want Delete this Testcase ??');
+	if (conformation) {
+		url = window.location.href;
+		var hash;
+		var hashes = url.slice(url.indexOf('?') + 1).split('&');
+		hash = hashes[0].split('=');
+		challengeId = hash[1];
+
+		$.ajax({
+			url: "deleteTestCase",
+			type: 'post',
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				challengeId : challengeId,
+				testCaseId : Id
+			},
+			success: function (response) {
+				location.reload();
+			},
+			error: function (error) {
+				console.log(error);
+			}
+		});
+	}
+}
+
+function setDefaultTestcase(Id){
+	url = window.location.href;
+	var hash;
+	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+	hash = hashes[0].split('=');
+	challengeId = hash[1];
+
+	$.ajax({
+			url: "setDefaultTestcase",
+			type: 'post',
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				challengeId : challengeId,
+				testCaseId : Id
+			},
+			success: function (response) {
+				$( "#"+Id ).removeClass( "btn btn-primary" ).addClass( "btn btn-default" );
+				$( "#"+response ).removeClass( "btn btn-default" ).addClass( "btn btn-primary" );
+
+				$("#default"+Id).removeClass( "btn btn-primary btn btn-default" ).html('YES');
+				$("#default"+response).removeClass( "btn btn-primary btn btn-default" ).html('NO');
+
+			},
+			error: function (error) {
+				console.log(error);
+			}
+		});
+}
+

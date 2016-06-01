@@ -161,11 +161,11 @@
                             <td>{{.Input}}</td>
                             <td>{{.Output}}</td>
                             <td><button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editTestCasesModal">Edit</button></td>
-                            <td><label class="control-label col-sm-2" style="text-align: center;" for="">No</label></td>
-                            <td><button type="button" class="btn btn-primary" onclick="" id ="" style="cursor: pointer">
+                            <td><label class="control-label col-sm-2" style="text-align: center;" id = "default{{.Id}}">No</label></td>
+                            <td><button type="button" class="btn btn-primary" onclick="setDefaultTestcase(this.id)" id ={{.Id}} style="cursor: pointer">
                             <span class="glyphicon"></span> Default
                             </button></td>
-                            <td><input type="submit" id={{.Id}} class="btn btn-default" name = "submit" value = "Delete" onclick="deleteChallenge();"></td>
+                            <td><input type="submit" id={{.Id}} class="btn btn-default" name = "submit" value = "Delete" onclick="deleteTestCase(this.id)"></td>
                           </tr>
                         {{ end }}
                       {{ end }}
