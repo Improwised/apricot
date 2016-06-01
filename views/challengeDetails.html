@@ -6,15 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
+
     <title>Improwised Admin</title>
-    <link href="../assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/css/sb-admin.css" rel="stylesheet">
-    <link href="../assets/css/morris.css" rel="stylesheet">
-    <link href="../assets/fonts/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="../assets/js/index.js"></script>
+
+    <!-- Stylesheets -->
+
+    <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
+    <link rel="stylesheet" type="text/css" href="../assets/fonts/font-awesome.min.css">
+
+    <!-- /Stylesheets -->
+
   </head>
-  <body >
+  <body>
     <div id="wrapper">
+
+      <!-- Navigation -->
+
       <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -24,24 +33,34 @@
         <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
           <ul class="nav navbar-nav side-nav list-group">
             <li class="list-group-item">
+              <a href="candidates"><i class="fa fa-fw fa-bar-chart-o"></i> Candidates</a>
               <a href="/questions"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
               <a href="programmingtest"><i class="fa fa-fw fa-bar-chart-o"></i> Programming Challenges</a>
-              <a href="candidates"><i class="fa fa-fw fa-bar-chart-o"></i> Candidates</a>
             </li>
           </ul>
         </div>
-        <!-- /.navbar-collapse -->
       </nav>
+
+      <!-- /Navigation -->
+
       <div id="page-wrapper">
         <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-12">
-              <h1 class="page-header">
-                Dashboard <small>Statistics Overview</small>
-              </h1>
 
-            </div>
-          </div>
+        <!-- Page Heading -->
+
+          <h1 class="page-header">
+            Candidate Details
+          </h1>
+          <ol class="breadcrumb">
+            <li class="active">
+              <i class="">Challenge Information</i>  
+            </li>
+          </ol>
+
+          <!-- /Page Heading -->
+
+          <!-- row -->
+
           <div class="row">
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
@@ -49,40 +68,44 @@
                   {{with .}}
                     {{range .GetChallenge}}
                       <ul class="nav nav-tabs">
-                        <li><a data-toggle="tab" href="personalInformation?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Personal Information</a></li>
+                        <li><a data-toggle="tab" href="/personalInformation?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Personal Information</a></li>
                         <li><a data-toggle="tab" href="questionDetails?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Questions Details</a></li>
                         <li class="active"><a data-toggle="tab" href="#">Challenge Details</a></li>
                       </ul>
                       <div>
                         <h3>Challenge : {{ .Challenge }}</h3>
                       </div>
-                    {{  end }}
-                  {{  end }}
+                    {{end}}
+                  {{end}}
                   <br>
                   <br>
 
-                  <div class="hello">
+                  <div class="mark">
                     <div>
                       {{with .}}
                         {{range .GetAnswers}}
                           <div><a href="#" onclick="challengeAttempts({{.Attempt}});">Attempt - {{.Attempt}}</a></div><br>
-                        {{ end }}
-                      {{ end }}
+                        {{end}}
+                      {{end}}
                     </div>
-                      <div id="editor" rows="20" cols="180" value="ash"></div>
+                    <div id="editor" rows="20" cols="180" value="ash"></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- /row -->
+
         </div>
       </div>
     </div>
+
+    <!-- Scripting -->
+
     <script type="text/javascript" src="../assets/js/index.js"></script>
-    <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="../assets/js/bootstrap.min.js"></script>
-    <script src="//ajaxorg.github.io/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" type="text/javascript" ></script>
+    <script type="text/javascript" src="//ajaxorg.github.io/ace-builds/src/ace.js"></script>
     <script type="text/javascript">
       $('#myTabs a').click(function (e) {
         e.preventDefault()
@@ -97,5 +120,8 @@
       s.src = '//ajaxorg.github.io/ace-builds/src/mode-javascript.js';
       document.getElementById('editor').style.fontSize='16px';
     </script>
+
+    <!-- /Scripting -->
+
   </body>
 </html>
