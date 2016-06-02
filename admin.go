@@ -62,6 +62,30 @@ type getAllQuestionsInfo struct {
 	QuestionsInfo []questionsInformation
 }
 
+// get question information from database using qId
+func getQuestionInfoHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	qId := r.FormValue("id")
+	stmt1, _ := db.Prepare("select id, description, sequence from questions where id = ($1)")
+		rows1, _ := stmt1.Query(qId)
+		questions := []questionsInformation{}
+		q := questionsInformation{}
+		for rows1.Next() {
+			err := rows1.Scan(&q.Id, &q.Description, &q.Sequence)
+			questions = append(questions, q)
+			checkErr(err)
+		}
+	b, err := json.Marshal(questions)
+	if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+	}
+	//==========================
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+	fmt.Println(questions)
+
+}
+
 // display only active questions in view...
 func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	query :="select id, description, deleted, sequence from questions where deleted is null order by sequence"
@@ -111,27 +135,12 @@ func AllQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 // perform edit functionality
 func editQuesionHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("qId") != "" {
-		description := r.FormValue("description")
-		sequence := r.FormValue("sequence")
-		qId := r.FormValue("qId")
-		stmt1, _ := db.Prepare("update questions set description = ($1), sequence = ($2) where id = ($3)")
-		stmt1.Query(description, sequence, qId)
-		http.Redirect(w, r, "questions", 301)
-	} else {
-		qId := r.URL.Query().Get("qid")
-		stmt1, _ := db.Prepare("select description, sequence from questions where id = ($1)")
-		rows1, _ := stmt1.Query(qId)
-		questions := []questionsInformation{}
-		q := questionsInformation{}
-		for rows1.Next() {
-			err := rows1.Scan(&q.Description, &q.Sequence)
-			questions = append(questions, q)
-			checkErr(err)
-		}
-		t, _ := template.ParseFiles("./views/editquestion.html")
-		t.Execute(w, questions)
-	}
+	description := r.FormValue("description")
+	sequence := r.FormValue("sequence")
+	qId := r.FormValue("qId")
+	stmt1, _ := db.Prepare("update questions set description = ($1), sequence = ($2) where id = ($3)")
+	stmt1.Query(description, sequence, qId)
+	http.Redirect(w, r, "questions", 301)
 }
 
 //  delete questions functionality
@@ -156,6 +165,7 @@ func addQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "questions", 301)
 }
 
+// retrive challenges from database.
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
@@ -201,6 +211,7 @@ func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, getAllQuestionsInfo)
 }
 
+// mark challenge as a deleted.
 func deleteChanllengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	qId := r.URL.Query().Get("qid")
 	status := r.URL.Query().Get("deleted")
@@ -213,55 +224,18 @@ func deleteChanllengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// edit perticualr challenge.
 func editChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	if r.FormValue("qId") != "" {
-		description := r.FormValue("description")
+	challengeId := r.FormValue("challengeId")
+	description := r.FormValue("challengeDescription")
 
-		//Encrypt the description to store in database with special charecters
-		encodeChallenge := base64.StdEncoding.EncodeToString([]byte(description))
-		//==================================
+	//Encrypt the description to store in database with special charecters
+	encodeChallenge := base64.StdEncoding.EncodeToString([]byte(description))
+	//==================================
 
-		qId := r.FormValue("qId")
-
-		stmt1, _ := db.Prepare("update challenges set description = ($1) where id = ($2)")
-		stmt1.Query(encodeChallenge, qId)
-		http.Redirect(w, r, "programmingtest", 301)
-	} else {
-		qId := r.URL.Query().Get("qid")
-
-		stmt1, _ := db.Prepare("select description from challenges where id = ($1)")
-		rows1, _ := stmt1.Query(qId)
-		questions := []questionsInformation{}
-		q := questionsInformation{}
-		var encodedChallenge string
-		for rows1.Next() {
-			err := rows1.Scan(&encodedChallenge)
-
-			//Decode the encrypted challenge from database...
-			decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
-			if err != nil {
-				fmt.Println("decode error:", err)
-				return
-			}
-			//==================================================
-
-			//convert decrypted challenge to string from byte and store it into structure====================
-			var m = map[string]*struct{ challenge string }{
-			"foo": {"Challenge"},
-			}
-
-			m["foo"].challenge = string(decodedChallenge)
-
-			q.Description = m["foo"].challenge
-			//======================================================
-
-			questions = append(questions, q)
-			checkErr(err)
-
-			t, _ := template.ParseFiles("./views/editchallenge.html")
-			t.Execute(w, questions)
-		}
-	}
+	stmt1, _ := db.Prepare("update challenges set description = ($1) where id = ($2)")
+	stmt1.Query(encodeChallenge, challengeId)
+	http.Redirect(w, r, "programmingtest", 301)
 }
 
 type GeneralInfo struct {
@@ -319,8 +293,9 @@ type ChallengeInfo struct {
 	Id int
 }
 
+// add new programming challenges.
 func newChallengeHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	desc := r.FormValue("desc")
+	desc := r.FormValue("description")
 
 	//Encrypt the description to store in database with special charecters
 	description := base64.StdEncoding.EncodeToString([]byte(desc))
@@ -374,6 +349,7 @@ type GetQuestions struct {
 	QuestionAttempted string
 	ChallengeAttempts string
 }
+
 //will display questions and answer given by candidates..
 func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	QuestionsAttended := r.FormValue("queAttempt")
@@ -485,6 +461,7 @@ type AllDetails struct{
 	ChallengeDesc ChallengeDesc
 }
 
+// add testcases for perticular challenge.
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 
@@ -541,6 +518,42 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r,  "addTestCases?qid=" + challengeId , 301)
 	}
 }
+
+// retrive testcase input output
+func getTestCaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	testCaseId := r.FormValue("testCaseId")
+	challengeId := r.FormValue("challengeId")
+	stmt,_ :=db.Prepare("select input, output from challenge_cases where challengeId = ($1) AND id = ($2)")
+	rows, _ := stmt.Query(challengeId, testCaseId)
+	challengeCases := []ChallengeCases{}
+		q := ChallengeCases{}
+		for rows.Next() {
+			err := rows.Scan(&q.Input, &q.Output)
+			checkErr(err)
+			challengeCases = append(challengeCases, q)
+		}
+		b, err := json.Marshal(challengeCases)
+		if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+		}
+	//==========================
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+		// allDetails.ChallengeDesc = challenge
+}
+
+// edit test case .
+func editTestCaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	testCaseId := r.FormValue("testCaseId")
+	challengeId := r.FormValue("challengeId")
+	input := r.FormValue("input")
+	output := r.FormValue("output")
+	stmt,_ :=db.Prepare("update challenge_cases set input = ($1), output = ($2) where id = ($3) AND challengeId = ($4)")
+	stmt.Query(input, output, testCaseId, challengeId)
+	http.Redirect(w, r,  "addTestCases?qid=" + challengeId , 301)
+}
+
 
 func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	//data comes from admin side...
@@ -714,6 +727,48 @@ func DefaultTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 
+type getChallengeDescription struct {
+	Description string
+}
+
+// get challenge information using challenge id.
+func getChallengeInfoHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	challengeId := r.FormValue("challengeId")
+	fmt.Println(challengeId)
+	stmt,_ := db.Prepare("select description from challenges where id = ($1)")
+	rows, _ := stmt.Query(challengeId)
+	challenge := getChallengeDescription{}
+	for rows.Next() {
+		err := rows.Scan(&challenge.Description)
+		checkErr(err)
+	}
+	decodedChallenge, err := base64.StdEncoding.DecodeString(challenge.Description)
+	if err != nil {
+		fmt.Println("decode error:", err)
+		return
+	}
+	//==================================================
+
+	//convert decrypted challenge to string from byte and store it into structure====================
+	var m = map[string]*struct{ challenge string }{
+		"foo": {"Challenge"},
+	}
+
+	m["foo"].challenge = string(decodedChallenge)
+	challenge.Description = m["foo"].challenge;
+	fmt.Println(challenge)
+	b, err := json.Marshal(challenge)
+	if err != nil {
+			fmt.Printf("Error: %s", err)
+			return;
+	}
+	//==========================
+	w.Header().Set("Content-Type", "application/json")
+	w.Write([]byte(b))//set response...
+
+}
+
+
 func main() {
 	db = setupDB()
 	defer db.Close()
@@ -739,6 +794,10 @@ func main() {
 	goji.Handle("/challengeAttempt", challengeAttemptHandler)
 	goji.Post("/deleteTestCase", deleteTestcaseHandler)
 	goji.Post("/setDefaultTestcase", DefaultTestcaseHandler)
+	goji.Post("/getQuestionInfo", getQuestionInfoHandler);
+	goji.Post("/getTestCase", getTestCaseHandler)
+	goji.Handle("/editTestCase", editTestCaseHandler)
+	goji.Post("/getChallengeInfo", getChallengeInfoHandler)
 
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/jquery/", http.StripPrefix("/assets/jquery/", http.FileServer(http.Dir("assets/jquery"))))

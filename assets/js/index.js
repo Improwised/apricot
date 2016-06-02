@@ -261,15 +261,6 @@ function getLanguages() {
 	});
 }
 
-function getid(){
-	var elem = document.getElementById("pad").value
-		if (window.XMLHttpRequest) {
-		xmlhttp=new XMLHttpRequest();
-	}
-		xmlhttp.open("GET", "/newChallenge?&desc=" + elem + "");
-		xmlhttp.send();
-}
-
 function saveTaseCases(){
 	var input = document.getElementById("input").value
 	var output = document.getElementById("output").value
@@ -542,5 +533,122 @@ function setDefaultTestcase(Id){
 				console.log(error);
 			}
 		});
+}
+
+// get question information
+function getQuestionInfo(id) {
+	$.ajax({
+		url: "getQuestionInfo",
+		type: 'post',
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			id : id
+		},
+
+		success: function (response) {
+			$("#questionDescription").val(response[0].Description);
+			$("#questionSequence").val(response[0].Sequence);
+			$("#qId").val(response[0].Id);
+			$("#editQuestionModal").modal('show');
+		},
+
+		error: function (error) {
+			console.log(error);
+		}
+
+	});
+}
+
+function getTestCase(id) {
+	url = window.location.search.substring(1);
+	var hash;
+	var myJson = {};
+	var hashes = url.slice(url.indexOf('?') + 1).split('&');
+
+	for (var i = 0; i < hashes.length; i++) {
+		hash = hashes[i].split('=');
+		myJson[hash[0]] = hash[1];
+	}
+	var challengeId = myJson[hash[0]];
+	$.ajax({
+		url: "getTestCase",
+		type: 'post',
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			testCaseId : id,
+			challengeId : challengeId
+		},
+
+	success: function (response) {
+			$("#inputCase").val(response[0].Input);
+			$("#outputCase").val(response[0].Output);
+			$("#challengeId").val(challengeId);
+			$("#testCaseId").val(id)
+			$("#editTestCasesModal").modal('show');
+		},
+
+		error: function (error) {
+			console.log(error);
+
+		}
+
+	});
+}
+
+function getChallengeInfo(id) {
+	console.log("2");
+	$.ajax({
+		url: "getChallengeInfo",
+		type: 'post',
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			challengeId : id
+		},
+		success: function (response) {
+			console.log("3");
+			$("#pad1").val(response.Description);
+			$("#challengeId").val(id)
+			markDownActive();
+			$("#editChallengeModal").modal('show');
+		},
+
+		error: function (error) {
+			console.log(error);
+		}
+	});
+}
+
+function markDownActive() {
+  console.log("1");
+  // Add Challenge Modal
+  var converter = new showdown.Converter();
+  var pad = document.getElementById('pad');
+  var markdownArea = document.getElementById('markdown');
+
+  var convertTextAreaToMarkdown = function(){
+
+    var markdownText = pad.value;
+    html = converter.makeHtml(markdownText);
+    markdownArea.innerHTML = html;
+  };
+
+  pad.addEventListener('input', convertTextAreaToMarkdown);
+
+  convertTextAreaToMarkdown();
+
+  // Edit Challenge modal
+  var converter1 = new showdown.Converter();
+  var pad1 = document.getElementById('pad1');
+  var markdownArea1 = document.getElementById('markdown1');
+
+  var convertTextAreaToMarkdown1 = function(){
+    var markdownText1 = pad1.value;
+    html1 = converter.makeHtml(markdownText1);
+    markdownArea1.innerHTML = html1;
+  };
+
+  pad1.addEventListener('input', convertTextAreaToMarkdown1);
+
+  convertTextAreaToMarkdown1();
 }
 

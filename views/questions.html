@@ -169,7 +169,7 @@
           <!-- /Edit Question Modal -->
 
           <!-- /.row -->
-          
+
           <div class="row">
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
@@ -192,7 +192,7 @@
                           <td class="text-center">{{.Id}}</td>
                           <td>{{.Description}}</td>
                           <td class="text-center">{{.Sequence}}</td>
-                          <td class="text-center"><button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editQuestionModal">Edit</button></td>
+                          <td class="text-center"><button type="button" class="btn btn-warning btn-sm" id="{{.Id}}" onclick="getQuestionInfo(this.id)">Edit</button></td>
                           <td>{{if eq .Flag 1}}
                             <label class="control-label col-sm-2" for="">No</label>
                           {{else}}
@@ -247,7 +247,7 @@
         $("#selection").change(function() {
           location = $("#selection option:selected").val();
         });
-      }); 
+      });
     </script>
 
     <!-- /Scripting -->

@@ -17,14 +17,14 @@
     <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
-    <link rel="stylesheet" type="text/css" href="../assets/fonts/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-select.min.css">
 
     <!-- /Stylesheets -->
 
   </head>
 
-  <body onload = "">
+  <body>
     <div id="wrapper">
 
       <!-- Navigation -->
@@ -57,11 +57,11 @@
           </h1>
 
           <!-- /Page Heading -->
-          
+
           <ol class="breadcrumb">
             <li class="active">
               <!-- Trigger the modal with a button -->
-              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#addChallengeModal">Add Challenge</button>
+              <button type="button" class="btn btn-info btn-lg" data-toggle="modal" onclick="markDownActive()" data-target="#addChallengeModal">Add Challenge</button>
             </li>
           </ol>
 
@@ -70,7 +70,7 @@
           <div class="btn-group pull-right">
             <select name="menu" class="selectpicker pull-right" id="selection">
               <option value="./programmingtest">Active</option>
-              <option value="">All</option>
+              <option value="./programmingtest">All</option>
             </select>
           </div>
 
@@ -89,8 +89,8 @@
                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                    <h4 class="modal-title">Challenge</h4>
                   </div>
-                  <div class="modal-body" style="">
-                    <form class="form-horizontal" role="form" onsubmit="getid();" method="POST" action="./addchallenge">
+                  <div class="modal-body">
+                    <form class="form-horizontal" role="form" method="POST" action="newChallenge">
 
                     <!-- Markdown Editor -->
 
@@ -99,13 +99,13 @@
                           <label class="control-label col-sm-2" for="description">Description:</label>
                         </div>
                         <div class="clearfix">
-                          <textarea id="pad">Write your text</textarea>
+                          <textarea id="pad" placeholder="Write your text" name="description"></textarea>
                           <div id="markdown"></div>
                         </div>
                         <br><br>
                         <div class="form-group">
                           <div class="col-sm-offset-5 col-sm-10" style="margin-left : 44%">
-                          <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
+                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
                           </div>
                         </div>
                       </div>
@@ -126,32 +126,32 @@
 
           <!-- Edit Challenge Modal -->
 
-          <div class="modal fade" id="editChallengeModal" role="dialog">
+         <div class="modal fade" id="editChallengeModal" role="dialog">
             <div class="modal-dialog">
               <div class="modal-dialog modal-lg">
                <!-- Modal content -->
                 <div class="modal-content">
                   <div class="modal-header">
                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                   <h4 class="modal-title">Edit Challenge</h4>
+                   <h4 class="modal-title">Challenge</h4>
                   </div>
                   <div class="modal-body" style="">
-                    <form class="form-horizontal" role="form" onsubmit="getid();" method="POST" action="./addchallenge">
-
-                    <!-- Markdown Editor -->
+                    <form class="form-horizontal" role="form" method="POST" action="editchallenge">
+                    <input type="hidden" id="challengeId" name="challengeId">
+                       <!-- Markdown Editor -->
 
                       <div>
                         <div class="form-group">
                           <label class="control-label col-sm-2" for="description">Description:</label>
                         </div>
                         <div class="clearfix">
-                          <textarea id="pad">Write your text</textarea>
-                          <div id="markdown"></div>
+                          <textarea class="pad" id="pad1" name="challengeDescription" placeholder="Write your text"></textarea>
+                          <div class="markdown" id="markdown1"></div>
                         </div>
                         <br><br>
                         <div class="form-group">
                           <div class="col-sm-offset-5 col-sm-10" style="margin-left : 44%">
-                          <input type="submit" class="btn btn-default" name = "submit" value="Submit">
+                            <input type="submit" class="btn btn-default"  name = "submit" value="Submit">
                           </div>
                         </div>
                       </div>
@@ -169,8 +169,6 @@
           </div>
 
           <!-- Exit Edit Challenge Modal -->
-
-          <div><button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editChallengeModal">Edit</button></div>
 
           <!-- /.row -->
 
@@ -191,34 +189,32 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <!-- {{with .}} -->
                         {{range .QuestionsInfo}}
-                        <tr>
-                          <td>{{.Id}}</td>
-                          <td>{{.Description}}</td>
-                          <td class="text-center"><button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editChallengeModal">Edit</button></td>
-                          <td class="text-center">
-                            <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button>ADD</button></a>
-                          </td>
-                          <td>{{if eq .Flag 1}}
-                            <label class="control-label col-sm-2" for="">No</label>
-                          {{else}}
-                            <label class="control-label col-sm-2" for="">Yes</label>
-                          {{end}}
-                          </td>
-                          <td class="text-center">{{if eq .Flag 1}}
-                            <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                              <span class="glyphicon"></span> Show
-                            </button>
-                          {{else}}
-                            <button type="button" class="btn btn-danger" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                              <span class="glyphicon"></span> Hide
-                            </button>
-                          {{end}}
-                          </td>
-                        </tr>
+                          <tr>
+                            <td>{{.Id}}</td>
+                            <td>{{.Description}}</td>
+                            <td class="text-center"><button type="button" class="btn btn-warning btn-sm" id="{{.Id}}" onclick="getChallengeInfo(this.id)">Edit</button></td>
+                            <td class="text-center">
+                              <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button>ADD</button></a>
+                            </td>
+                            <td>{{if eq .Flag 1}}
+                              <label class="control-label col-sm-2" for="">No</label>
+                            {{else}}
+                              <label class="control-label col-sm-2" for="">Yes</label>
+                            {{end}}
+                            </td>
+                            <td class="text-center">{{if eq .Flag 1}}
+                              <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                                <span class="glyphicon"></span> Show
+                              </button>
+                            {{else}}
+                              <button type="button" class="btn btn-danger" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
+                                <span class="glyphicon"></span> Hide
+                              </button>
+                            {{end}}
+                            </td>
+                          </tr>
                         {{end}}
-                         <!-- {{end}} -->
                       </tbody>
                     </table>
                   </div>
@@ -247,32 +243,14 @@
     <script type="text/javascript" src="../assets/js/bootstrap-select.min.js"></script>
     <script type="text/javascript" src="https://cdn.rawgit.com/showdownjs/showdown/1.0.2/dist/showdown.min.js"></script>
     <script type="text/javascript">
-      window.onload = function() {
-        var converter = new showdown.Converter();
-        var pad = document.getElementById('pad');
-        var markdownArea = document.getElementById('markdown');   
-
-        var convertTextAreaToMarkdown = function(){
-
-          var markdownText = pad.value;
-          html = converter.makeHtml(markdownText);
-          markdownArea.innerHTML = html;
-        };
-
-        pad.addEventListener('input', convertTextAreaToMarkdown);
-
-        convertTextAreaToMarkdown();
-      };
-      $(document).ready(function() {
-        if (window.location.href.split('/')[3] === 'allQuestions') {
-          $('#selection option:contains("All")').prop('selected', true);
-        } else {
-          $('#selection option:contains("Active")').prop('selected', true);
-        }
-        $("#selection").change(function() {
-          location = $("#selection option:selected").val();
-        });
-      }); 
+      if (window.location.href.split('/')[3] === 'allQuestions') {
+        $('#selection option:contains("All")').prop('selected', true);
+      } else {
+        $('#selection option:contains("Active")').prop('selected', true);
+      }
+      $("#selection").change(function() {
+        location = $("#selection option:selected").val();
+      });
     </script>
 
     <!-- /Scripting -->
