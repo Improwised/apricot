@@ -53,7 +53,7 @@
           </h1>
           <ol class="breadcrumb">
             <li class="active">
-              <i class="">Challenge Information</i>  
+              <i class="">Challenge Information</i>
             </li>
           </ol>
 
@@ -84,11 +84,11 @@
                     <div>
                       {{with .}}
                         {{range .GetAnswers}}
-                          <div><a href="#" onclick="challengeAttempts({{.Attempt}});">Attempt - {{.Attempt}}</a></div><br>
+                          <div><a href="" onclick="challengeAttempts(event,{{.Attempt}});">Attempt - {{.Attempt}}</a></div><br>
                         {{end}}
                       {{end}}
                     </div>
-                    <div id="editor" rows="20" cols="180" value="ash"></div>
+                    <div id="editor" rows="20" cols="180"> aaaaa</div>
                   </div>
                 </div>
               </div>
@@ -103,24 +103,24 @@
 
     <!-- Scripting -->
 
+    <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
     <script type="text/javascript" src="../assets/js/index.js"></script>
     <script type="text/javascript" src="../assets/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="//ajaxorg.github.io/ace-builds/src/ace.js"></script>
+    <script src="//ajaxorg.github.io/ace-builds/src/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript " src="//ajaxorg.github.io/ace-builds/src/mode-javascript.js"></script>
+
     <script type="text/javascript">
       $('#myTabs a').click(function (e) {
         e.preventDefault()
         $(this).tab('show')
       });
     </script>
-    <script>
+    <script type="text/javascript">
       var editor = ace.edit("editor");
-
-      editor.setTheme("ace/theme/katzenmilch");
-      s.type = "text/javascript";
-      s.src = '//ajaxorg.github.io/ace-builds/src/mode-javascript.js';
-      document.getElementById('editor').style.fontSize='16px';
+      var langMode = ace.require("ace/mode/javascript").Mode;
+      editor.getSession().setMode(new langMode());
     </script>
-
+    <script src="src/merbivore.js" type="text/javascript" charset="utf-8"></script>
     <!-- /Scripting -->
 
   </body>

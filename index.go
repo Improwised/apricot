@@ -724,6 +724,7 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 	language := r.FormValue("language")
 	hash := r.FormValue("hash")
 	id := r.FormValue("id")
+	aceLang := r.FormValue("aceLang")
 	var sessionid string
 	//will save the source code to databse when user run the code
 	var buffer2 bytes.Buffer
@@ -757,15 +758,15 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 
 			if err != nil{
 				attempts = 0;
-				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, created) VALUES($1, $2, $3, NOW())"
+				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, language, created) VALUES($1, $2, $3, $4, NOW())"
 			} else  {
 				attempts = mysession2[0].attempts
-				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, modified) VALUES($1, $2, $3, NOW())"
+				query3 = "INSERT INTO challenge_answers (sessionId, answer, attempts, language, modified) VALUES($1, $2, $3, $4, NOW())"
 			}
 		}
 
 		stmt1, err := db.Prepare(query3)
-		stmt1.Exec(sessionid, source, attempts + 1)
+		stmt1.Exec(sessionid, source, attempts + 1, aceLang)
 		checkErr(err)
 
 		//chek whether user run the code or submit the code

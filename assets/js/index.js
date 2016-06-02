@@ -131,6 +131,9 @@ function deleteChallenge(qId, element) {
 function getHrResponse(id) {
 	var source = editor.getValue();
 	var language = $(".language").val();
+	var languageName = $('#languages :selected').text();
+
+	var acelang = aceLanguage(languageName);
 	url = window.location.search.substring(1);
 	var hash;
 	var myJson = {};
@@ -167,7 +170,8 @@ function getHrResponse(id) {
 			source : source,
 			hash : key,
 			id : id,
-			language : language
+			language : language,
+			aceLang : acelang
 		},
 	success: function (response) {
 		var elem = document.getElementById("compilemessage")
@@ -271,14 +275,10 @@ function saveTaseCases(){
 	xmlhttp.send();
 }
 
-//will set behaviour of editor according to selected language...
-$(document).ready(function() {
-	$( ".language" ).change(function() {
-
-		var lang = $('#languages :selected').text();
-		var aceLang;
-
-		if(lang === "C" ||lang === "Cpp" || lang === "Ruby" || lang === "Oracle" || lang === "Go" || lang === "Python3" || lang === "Visualbasic" || lang === "Smalltalk" || lang === "Java8" || lang === "Db2" ){
+//will convert hackerrank langugage to ace editor language for syntext highlight ...
+function aceLanguage(lang){
+	var aceLang;
+	if(lang === "C" ||lang === "Cpp" || lang === "Ruby" || lang === "Oracle" || lang === "Go" || lang === "Python3" || lang === "Visualbasic" || lang === "Smalltalk" || lang === "Java8" || lang === "Db2" ){
 			if(lang === "C" || lang === "Cpp")	aceLang = "c_cpp"
 			if(lang === "Oracle" ) aceLang = "sql"
 			if(lang === "Go" ) aceLang = "golang"
@@ -292,10 +292,17 @@ $(document).ready(function() {
 		else {
 			 aceLang = lang.toLowerCase();
 		}
-		// var src = '//ajaxorg.github.io/ace-builds/src/mode-';
-		// var src = '../vendor/github.com/ajaxorg/ace/lib/ace/mode/';
-		// src += aceLang;
+		return aceLang;
+}
 
+//will set behaviour of editor according to selected language...
+$(document).ready(function() {
+	$( ".language" ).change(function() {
+
+		var lang = $('#languages :selected').text();
+		//=======
+		aceLang = aceLanguage(lang);
+		///======
 		var s = document.createElement("script");
 
 		s.type = "text/javascript";
@@ -314,6 +321,7 @@ $(document).ready(function() {
 		// document.getElementById('editor').style.letterSpacing = "0px";
 	});
 });
+
 
 //Searching start....
 function searchCandidates(){
@@ -453,8 +461,15 @@ function showQuestionData(){
 
 }
 
+function aceEditor(language){
+	var editor = ace.edit("editor");
+	var langMode = ace.require("ace/mode/"+language).Mode;
+	editor.getSession().setMode(new langMode());
+}
+
 //will return the source code of challenge according to challenge attempt..
-function challengeAttempts(attemptNo){
+function challengeAttempts(event, attemptNo){
+	event.preventDefault();
 	url = window.location.href;
 	var hash;
 	var hashes = url.slice(url.indexOf('?') + 1).split('&');
@@ -470,8 +485,19 @@ function challengeAttempts(attemptNo){
 				attemptNo : attemptNo
 			},
 		success: function (response) {
-			$("#editor").html(" ");
-			$('#editor').html(response);
+			// $("#editor").html(" ");
+			// $('#editor').html(response.Source);
+			var s = document.createElement("script");
+			console.log(response.Language);
+			s.type = "text/javascript";
+			// $("script[src='//ajaxorg.github.io/ace-builds/src/mode-'"+ response.Language +"'.js']").remove()
+
+			// s.src = '//ajaxorg.github.io/ace-builds/src/mode-'+ response.Language +'.js';//CDN Path..
+			// s.src = '../vendor/github.com/ajaxorg/ace/lib/ace/mode/java.js';//local Path..
+
+			$("head").append(s);
+			// aceEditor(response.Language)
+
 		},
 		error: function (error) {
 			console.log(error);

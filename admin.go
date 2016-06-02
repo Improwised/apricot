@@ -665,22 +665,28 @@ if(year =="All"){//will search for all the year passing out candidates..
 	w.Write([]byte(b))//set response...
 }
 
+type ChallengeAttemptsDetails struct{
+	Source string
+	Language string
+}
+
 //will return the perticullar attempted challenge source code
 func challengeAttemptHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	candidateId := r.FormValue("candidateID")
 	attemptNo := r.FormValue("attemptNo")
 
-	var source string
-	stmt,_ :=db.Prepare("SELECT answer FROM challenge_answers WHERE attempts=($1) AND sessionid = (select id from sessions where candidateid=($2) AND status= 0 )")
+	attemptDetails := ChallengeAttemptsDetails{}
+
+	stmt,_ :=db.Prepare("SELECT answer, language FROM challenge_answers WHERE attempts=($1) AND sessionid = (select id from sessions where candidateid=($2) AND status= 0 )")
 	rows, _ := stmt.Query(attemptNo, candidateId)
 
 	for rows.Next() {
-			err := rows.Scan(&source)
+			err := rows.Scan(&attemptDetails.Source, &attemptDetails.Language)
 			checkErr(err)
 		}
 	//========to convert response to JSON ==========
-	b, err := json.Marshal(source)
+	b, err := json.Marshal(attemptDetails)
 	if err != nil {
 			fmt.Printf("Error: %s", err)
 			return;
