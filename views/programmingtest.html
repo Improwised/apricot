@@ -198,18 +198,20 @@
                               <a href="/addTestCases?qid={{.Id}}" id = "{{.Id}}"><button>ADD</button></a>
                             </td>
                             <td>{{if eq .Flag 1}}
-                              <label class="control-label col-sm-2" for="">No</label>
+                              <label class="control-label col-sm-2" for="" id="show{{.Id}}">No</label>
                             {{else}}
-                              <label class="control-label col-sm-2" for="">Yes</label>
+                              <label class="control-label col-sm-2" for="" id="show{{.Id}}">Yes</label>
                             {{end}}
                             </td>
                             <td class="text-center">{{if eq .Flag 1}}
-                              <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                                <span class="glyphicon"></span> Show
+                              <button type="button" class="btn btn-success" onclick="deleteChallenge({{.Id}}, this)" id = "button{{.Id}}" style="cursor: pointer">
+                                <!-- <span class="glyphicon"></span> -->
+                                Show
                               </button>
                             {{else}}
-                              <button type="button" class="btn btn-danger" onclick="deleteChallenge({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                                <span class="glyphicon"></span> Hide
+                              <button type="button" class="btn btn-danger" onclick="deleteChallenge({{.Id}}, this)" id = "button{{.Id}}" style="cursor: pointer">
+                                <!-- <span class="glyphicon"></span> -->
+                                Hide
                               </button>
                             {{end}}
                             </td>

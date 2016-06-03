@@ -70,12 +70,12 @@
 
           <!-- Select Menu : Active/All -->
 
-          <div class="btn-group pull-right">
+         <!--  <div class="btn-group pull-right">
             <select name="menu" class="selectpicker pull-right" id="selection">
-              <option value="./questions">Active</option>
-              <option value="./allQuestions">All</option>
+              <option value="/activeQuestions">Active</option>
+              <option value="/questions">All</option>
             </select>
-          </div>
+          </div> -->
 
           <!-- /Select Menu : Active/All -->
 
@@ -194,18 +194,20 @@
                           <td class="text-center">{{.Sequence}}</td>
                           <td class="text-center"><button type="button" class="btn btn-warning btn-sm" id="{{.Id}}" onclick="getQuestionInfo(this.id)">Edit</button></td>
                           <td>{{if eq .Flag 1}}
-                            <label class="control-label col-sm-2" for="">No</label>
+                            <label class="control-label col-sm-2" for="" id="show{{.Id}}">No</label>
                           {{else}}
-                            <label class="control-label col-sm-2" for="">Yes</label>
+                            <label class="control-label col-sm-2" for="" id="show{{.Id}}">Yes</label>
                           {{end}}
                           </td>
                           <td class="text-center">{{if eq .Flag 1}}
-                            <button type="button" class="btn btn-success" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                              <span class="glyphicon"></span> Show
+                            <button type="button" class="btn btn-success" onclick="deleteQuestion({{.Id}}, this)" id = "button{{.Id}}" style="cursor: pointer">
+                            Show
+                              <!-- <span class="glyphicon">Show</span> -->
                             </button>
                           {{else}}
-                            <button type="button" class="btn btn-danger" onclick="deleteQuestion({{.Id}}, this)" id = "{{.Id}}" style="cursor: pointer">
-                              <span class="glyphicon"></span> Hide
+                            <button type="button" class="btn btn-danger" onclick="deleteQuestion({{.Id}}, this)" id = "button{{.Id}}" style="cursor: pointer">
+                            Hide
+                              <!-- <span class="glyphicon">Hide</span> -->
                             </button>
                           {{end}}
                           </td>

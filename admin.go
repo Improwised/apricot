@@ -11,12 +11,9 @@ import (
 	"encoding/json"
 	"os"
 	"encoding/base64"
-	// "io/ioutil"
 	"time"
 	"strings"
 	"bytes"
-	// "strconv"
-	// "reflect"
 )
 
 type Configuration struct {
@@ -109,8 +106,9 @@ func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		t, _ := template.ParseFiles("./views/questions.html")
 		t.Execute(w, getAllQuestionsInfo)
 }
+
 // display all questions in view...
-func AllQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	query := "select id, description, deleted, sequence from questions order by sequence"
 	rows3, _ := db.Query(query)
 
@@ -145,14 +143,27 @@ func editQuesionHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 //  delete questions functionality
 func deleteQuestionHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	qId := r.URL.Query().Get("qid")
-	status := r.URL.Query().Get("deleted")
-	if status == "no" {
+	qId := r.FormValue("qid")
+	stmt, _ := db.Prepare("select deleted from questions where id = ($1)")
+	rows, _ := stmt.Query(qId)
+	q := questionsInformation{}
+	status := "no"
+	for rows.Next() {
+		rows.Scan(&q.Deleted)
+		if q.Deleted != nil{
+			status = "no"
+		} else if q.Deleted == nil{
+			status = "yes"
+		}
+
+	if status == "yes" {
 		stmt1, _ := db.Prepare("update questions set deleted = NOW() where id = ($1)")
 		stmt1.Query(qId)
-	} else if status == "yes" {
+	} else if status == "no" {
 		stmt1, _ := db.Prepare("update questions set deleted = NULL where id = ($1)")
 		stmt1.Query(qId)
+	}
+	w.Write([]byte(status))
 	}
 }
 
@@ -213,14 +224,27 @@ func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 // mark challenge as a deleted.
 func deleteChanllengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	qId := r.URL.Query().Get("qid")
-	status := r.URL.Query().Get("deleted")
-	if status == "no" {
+	qId := r.FormValue("qid")
+	stmt, _ := db.Prepare("select deleted from challenges where id = ($1)")
+	rows, _ := stmt.Query(qId)
+	q := questionsInformation{}
+	status := "no"
+	for rows.Next() {
+		rows.Scan(&q.Deleted)
+		if q.Deleted != nil{
+			status = "no"
+		} else if q.Deleted == nil{
+			status = "yes"
+		}
+
+	if status == "yes" {
 		stmt1, _ := db.Prepare("update challenges set deleted = NOW() where id = ($1)")
 		stmt1.Query(qId)
-	} else if status == "yes" {
+	} else if status == "no" {
 		stmt1, _ := db.Prepare("update challenges set deleted = NULL where id = ($1)")
 		stmt1.Query(qId)
+	}
+	w.Write([]byte(status))
 	}
 }
 
@@ -450,8 +474,9 @@ type ChallengeCases struct{
 	Id int
 	Input string
 	Output string
-	Default string
+	Default bool
 	Challenge string
+	Flag int
 }
 type ChallengeDesc struct{
 	Challenge string
@@ -464,7 +489,6 @@ type AllDetails struct{
 // add testcases for perticular challenge.
 var challengeId string
 func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
-
 	var qId string = r.URL.Query().Get("qid")
 	if qId != "" {
 		challengeId = qId
@@ -479,7 +503,6 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 			fmt.Println("decode error:", err)
 			return
 		}
-		//==================================================
 
 		//convert decrypted challenge to string from byte and store it into structure====================
 		var m = map[string]*struct{ challenge string }{
@@ -487,7 +510,6 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		}
 
 		m["foo"].challenge = string(decodedChallenge)
-
 		Challenge.Challenge = m["foo"].challenge
 
 		stmt1, _ := db.Prepare("select id, input, output, defaultcase from challenge_cases where challengeid = ($1)")
@@ -499,8 +521,15 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		for rows1.Next() {
 			err := rows1.Scan(&q.Id, &q.Input, &q.Output, &q.Default)
 			checkErr(err)
+			if q.Default == true{
+				q.Flag = 0
+			} else if q.Default == false{
+				q.Flag = 1
+			}
+
 			challengeCases = append(challengeCases, q)
 		}
+		fmt.Println(challengeCases)
 		allDetails := AllDetails{}
 		allDetails.ChallengeCases = challengeCases
 		allDetails.ChallengeDesc = Challenge
@@ -708,21 +737,25 @@ func deleteTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func DefaultTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	testCaseId := r.FormValue("testCaseId")
 	challengeId := r.FormValue("challengeId")
-	var defaultCase string
 
-	err := db.QueryRow("select id from challenge_cases where challengeid = ($1) AND defaultcase = true", challengeId).Scan(&defaultCase)
+	// err := db.QueryRow("select id from challenge_cases where challengeid = ($1) AND defaultcase = true", challengeId).Scan(&defaultCase)
+	db.Query("update challenge_cases set defaultcase = false where challengeId = ($1)", challengeId)
 
-	if(err == nil){
-		stmt,_ :=db.Prepare("UPDATE challenge_cases SET defaultcase = false WHERE id = ($1)")
-		_, err := stmt.Query(defaultCase)
-		checkErr(err)
-	}
-	stmt1,_ :=db.Prepare("UPDATE challenge_cases SET defaultcase = true WHERE id = ($1)")
-	_, errr := stmt1.Query(testCaseId)
+	stmt1,_ :=db.Prepare("UPDATE challenge_cases SET defaultcase = true WHERE id = ($1) AND challengeid = ($2)")
+	_, errr := stmt1.Query(testCaseId, challengeId)
 	checkErr(errr)
 
+	rows, _ := db.Query("select id, defaultcase from challenge_cases where challengeid = ($1)", challengeId)
+	challengeCases := []ChallengeCases{}
+	q := ChallengeCases{}
+	for rows.Next() {
+			err := rows.Scan(&q.Id, &q.Default)
+			checkErr(err)
+	}
+	challengeCases = append(challengeCases, q)
+	fmt.Println(challengeCases)
 	//========to convert response to JSON ==========
-	b, err := json.Marshal(defaultCase)
+	b, err := json.Marshal(challengeCases)
 	if err != nil {
 			fmt.Printf("Error: %s", err)
 			return;
@@ -782,12 +815,12 @@ func main() {
 	goji.Handle("/", candidateHandler)
 	goji.Handle("/search", searchHandler)
 	goji.Handle("/candidates", candidateHandler)
-	goji.Handle("/questions", ActiveQuestionsHandler)
-	goji.Handle("/allQuestions", AllQuestionsHandler)
+	goji.Handle("/activeQuestions", ActiveQuestionsHandler)
+	goji.Handle("/questions", questionsHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
 	goji.Handle("/editquestion", editQuesionHandler)
 	goji.Handle("/deleteQuestion", deleteQuestionHandler)
-	goji.Handle("/deleteChallenges", deleteChanllengesHandler)
+	goji.Handle("/deleteChallenge", deleteChanllengesHandler)
 	goji.Handle("/personalInformation", personalInformationHandler)
 	goji.Handle("/questionDetails", questionDetailsHandler)
 	goji.Handle("/challengeDetails", challengeDetailsHandlers)

@@ -83,49 +83,61 @@ function getQid() {
 	document.getElementById("qId").value = myJson[hash[0]];
 }
 
-var flag = 1;
+// var flag = 0;
 function deleteQuestion(qId, element) {
-	if (window.XMLHttpRequest) {
-		xmlhttp=new XMLHttpRequest();
-	}
-	if (flag == 1) {
-		status = "no"
-		element.src ="../assets/img/true.png";
-		xmlhttp.open("GET", "/deleteQuestion?qid=" + qId+ "&deleted=" + status, true);
+		$.ajax({
+		url: "/deleteQuestion",
+		type: 'post',
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			qid : qId,
+		},
 
-		flag = 0;
-	}
-	else if (flag == 0) {
-		status = "yes"
-		element.src="../assets/img/false.png";
-		xmlhttp.open("GET", "/deleteQuestion?qid=" + qId+ "&deleted=" + status, true);
-		flag = 1;
+		success: function (response) {
+				if (response == "yes") {
+					document.getElementById("button" + qId).innerHTML = "Show";
+					element.className = "btn btn-success";
+					document.getElementById("show" + qId).innerHTML = "No";
+				}
+				else if (response == "no") {
+					document.getElementById("button" + qId).innerHTML = "Hide";
+					element.className = "btn btn-danger";
+					document.getElementById("show" + qId).innerHTML = "Yes";
+				}
+		},
 
-	}
-	xmlhttp.send();
+		error: function (error) {
+			console.log(error);
+		}
+	});
 }
 
 function deleteChallenge(qId, element) {
+	$.ajax({
+		url: "/deleteChallenge",
+		type: 'post',
+		contentType: "application/x-www-form-urlencoded",
+		data: {
+			qid : qId,
+		},
 
-	if (window.XMLHttpRequest) {
-		xmlhttp=new XMLHttpRequest();
-	}
-	if (flag == 1) {
-		status = "no"
-		element.src ="../assets/img/true.png";
-		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
-		element.src="../assets/img/true.png";
-		flag = 0;
-	}
-	else if (flag == 0) {
-		status = "yes"
-		element.src="../assets/img/false.png";
-		xmlhttp.open("GET", "/deleteChallenges?qid=" + qId+ "&deleted=" + status, true);
-		element.src ="../assets/img/false.png";
-		flag = 1;
+		success: function (response) {
+				if (response == "yes") {
+					document.getElementById("button" + qId).innerHTML = "Show";
+					element.className = "btn btn-success";
+					document.getElementById("show" + qId).innerHTML = "No";
+				}
+				else if (response == "no") {
+					document.getElementById("button" + qId).innerHTML = "Hide";
+					element.className = "btn btn-danger";
+					document.getElementById("show" + qId).innerHTML = "Yes";
+				}
+		},
 
-	}
-	xmlhttp.send();
+		error: function (error) {
+			console.log(error);
+		}
+	});
 }
 
 function getHrResponse(id) {
@@ -532,7 +544,7 @@ function deleteTestCase(Id){
 	}
 }
 
-function setDefaultTestcase(Id){
+function setDefaultTestcase(element, Id){
 	url = window.location.href;
 	var hash;
 	var hashes = url.slice(url.indexOf('?') + 1).split('&');
@@ -547,14 +559,14 @@ function setDefaultTestcase(Id){
 				challengeId : challengeId,
 				testCaseId : Id
 			},
+
 			success: function (response) {
-				$( "#"+Id ).removeClass( "btn btn-primary" ).addClass( "btn btn-default" );
-				$( "#"+response ).removeClass( "btn btn-default" ).addClass( "btn btn-primary" );
-
-				$("#default"+Id).removeClass( "btn btn-primary btn btn-default" ).html('YES');
-				$("#default"+response).removeClass( "btn btn-primary btn btn-default" ).html('NO');
-
+				$(".defaultButton").addClass("btn btn-primary defaultButton");
+				element.className = "btn btn-default defaultButton";
+				$(".defaultStatus").html("No");
+				$("#default" + Id).html("Yes");
 			},
+
 			error: function (error) {
 				console.log(error);
 			}
