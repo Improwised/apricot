@@ -281,6 +281,7 @@ type AllDetail struct {
 }
 
 func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	db = setupDB()
 	hash := r.URL.Query().Get("key")
 
 	if(len(hash)!=40 || hash == ""){//chek whether hash modified by candidate..
@@ -337,7 +338,6 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		row3.Scan(&user.Id, &user.Name, &user.Contact, &user.Degree, &user.College, &user.YearOfCompletion)
 		User = append(User, user)
 	}
-	dataUpdate(w, r, hash)
 	t, _ := template.ParseFiles("./views/information.html")
 
 	allDetails.GeneralInfo = User
@@ -346,10 +346,12 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, allDetails)
 }
 
-func dataUpdate(w http.ResponseWriter, r *http.Request, hash string) {
-	db = setupDB()
+//information and answer of question of candidate will be save to database on keyUp ...
+func dataUpdate(w http.ResponseWriter, r *http.Request) {
 	data := r.URL.Query().Get("data")
 	id := r.URL.Query().Get("id")
+	hash := r.URL.Query().Get("key")
+
 	var table="questions_answers";
 	if id == "name" || id == "contact" || id == "degree" || id == "college" || id == "yearOfCompletion"{
 		table = "candidates"
@@ -855,10 +857,23 @@ func getHrResponse(c web.C, w http.ResponseWriter, r *http.Request){
 		for i := 0; i < length; i++ {
 			outputDatabase[i] = strings.TrimSpace(outputDatabase[i]);
 			outputResponse[i] = strings.TrimSpace(outputResponse[i]);
-			//
-			if(CompareString(outputDatabase[i], outputResponse[i]) == 0){
+
+
+			outputDatabaseToBytes := []byte(outputDatabase[i])
+			outputApiToBytes := []byte(outputResponse[i])
+
+			outputDatabaseBytes := bytes.Replace(outputDatabaseToBytes, []byte("\r"), []byte(""), -1)
+			// fmt.Println(replace)
+
+
+			fmt.Println("database-->\n",outputApiToBytes)
+			fmt.Println("Hackerrank -->\n", outputDatabaseBytes)
+
+			if(CompareString(string(outputApiToBytes), string(outputDatabaseBytes)) == 0){
+				fmt.Println("11")
 				count = 1
 			} else{
+				fmt.Println("22")
 				count = 0
 			}
 			status = append(status, count)
@@ -912,7 +927,7 @@ func main() {
 	defer db.Close()
 
 	goji.Handle("/index", indexHandler)
-	goji.Post("/", indexHandler)
+	goji.Handle("/", indexHandler)
 	goji.Handle("/information", informationHandler)
 	goji.Handle("/challenges", challengesHandler)
 	goji.Handle("/challenge", challengeHandler)
@@ -921,11 +936,12 @@ func main() {
 	goji.Handle("/confirmation", confirmationPage)
 	goji.Handle("/thankYouPage", thankYouHandler)
 	goji.Handle("/expired", expiredPage)
+	goji.Handle("/saveData", dataUpdate)
 
 	http.Handle("/assets/css/", http.StripPrefix("/assets/css/", http.FileServer(http.Dir("assets/css"))))
 	http.Handle("/assets/js/", http.StripPrefix("/assets/js/", http.FileServer(http.Dir("assets/js"))))
 	http.Handle("/assets/img/", http.StripPrefix("/assets/img/", http.FileServer(http.Dir("assets/img"))))
 	http.Handle("/assets/fonts/", http.StripPrefix("/assets/fonts/", http.FileServer(http.Dir("assets/fonts"))))
-	http.Handle("/vendor/github.com/ajaxorg/ace/lib/ace/mode/", http.StripPrefix("/vendor/github.com/ajaxorg/ace/lib/ace/mode/", http.FileServer(http.Dir("vendor/github.com/ajaxorg/ace/lib/ace/mode/"))))
+	// http.Handle("/assets/js/ajaxorg/ace-builds/src-noconflict/", http.StripPrefix("/assets/js/ajaxorg/ace-builds/src-noconflict/", http.FileServer(http.Dir("/assets/js/ajaxorg/ace-builds/src-noconflict/"))))
 	goji.Serve()
 }

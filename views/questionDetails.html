@@ -54,7 +54,7 @@
           </h1>
           <ol class="breadcrumb">
             <li class="active">
-              <i class="">Questions Information</i>  
+              <i class="">Questions Information</i>
             </li>
           </ol>
 
@@ -65,37 +65,48 @@
             <div class="col-xl-4 col-lg-12">
               <div class="card card-default">
                 <div class="card-block">
-                  {{with .}}
-                    {{range .}}
+                    {{range .GeneralDetails}}
                       <ul class="nav nav-tabs">
                         <li><a data-toggle="tab" href="/personalInformation?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Personal Information</a></li>
                         <li class="active"><a data-toggle="tab" href="#">Questions Details</a></li>
                         <li><a data-toggle="tab" href="challengeDetails?id={{.Id}}&queAttempt={{.QuestionAttempted}}&challengeAttmpt={{.ChallengeAttempts}}">Challenge Details</a></li>
                       </ul>
                       <br><br>
+                    {{end}}
+                      {{range .GetQuestions}}
                       <div class="tab-content">
                         <div id="menu1" class="tab-pane fade in active">
                           <div class="form-group">
                             <div class="col-sm-10">
                               <div class="form-group">
-                                <label class="control-label col-sm-3" for="contact">Question : </label>
-                                <div class="col-sm-8">
-                                  <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Questions}}</label>
+                                <label class="control-label col-sm-1" for="contact">Question : </label>
+                                <div class="">
+                                  <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal"> {{.Questions}}</label>
                                 </div>
                               </div>
 
                               <div class="form-group">
-                                <label class="control-label col-sm-3" for="contact">Answer : </label>
-                                <div class="col-sm-8">
+                                <label class="control-label col-sm-1" for="contact">Answer : </label>
+                                <div class="">
                                   <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.Ans}}</label>
                                 </div>
                               </div>
+
+                            <div class="form-group">
+                              <label class="control-label col-sm-1" for="contact">Date : </label>
+                              <div class="">
+                                <label class="control-label" name="Contact" id="Contact" style="width: 900px; height: 30px; text-align: left; font-weight: normal">{{.DateTimeOnly}}</label>
+                                <h5>----------------------------------------------------------------------------</h5>
+                              </div>
+                            </div>
+
                             </div>
                           </div>
                         </div>
                       </div>
-                    {{end}}
-                  {{end}}
+                      {{end}}
+
+
                 </div>
               </div>
             </div>

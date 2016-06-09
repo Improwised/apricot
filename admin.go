@@ -84,8 +84,8 @@ func getQuestionInfoHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 // display only active questions in view...
-func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	query :="select id, description, deleted, sequence from questions where deleted is null order by sequence"
+func allQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	query :="select id, description, deleted, sequence from questions  order by sequence"
 	rows3, _ := db.Query(query)
 
 	getAllQuestionsInfo := getAllQuestionsInfo{}
@@ -109,7 +109,7 @@ func ActiveQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 // display all questions in view...
 func questionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	query := "select id, description, deleted, sequence from questions order by sequence"
+	query := "select id, description, deleted, sequence from questions where deleted is null order by sequence"
 	rows3, _ := db.Query(query)
 
 	getAllQuestionsInfo := getAllQuestionsInfo{}
@@ -180,6 +180,51 @@ func addQuestionsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	getAllQuestionsInfo := getAllQuestionsInfo{}
 	var buffer bytes.Buffer
+	buffer.WriteString("select id, description, deleted from challenges where deleted is null order by id")
+	rows3, _ := db.Query(buffer.String())
+
+	questionsInfo := []questionsInformation{}
+	q := questionsInformation{}
+	var encodedChallenge string
+
+	for rows3.Next() {
+		err := rows3.Scan(&q.Id, &encodedChallenge, &q.Deleted)
+		if q.Deleted != nil{
+			q.Flag = 1
+		} else if q.Deleted == nil{
+			q.Flag = 0
+		}
+
+		//Decode the encrypted challenge from database...
+		decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
+		if err != nil {
+			fmt.Println("decode error:", err)
+			return
+		}
+		//==================================================
+
+		//convert decrypted challenge to string from byte and store it into structure====================
+		var m = map[string]*struct{ challenge string }{
+		"foo": {"Challenge"},
+		}
+
+		m["foo"].challenge = string(decodedChallenge)[1:150]
+
+		q.Description = m["foo"].challenge
+		//======================================================
+
+		questionsInfo = append(questionsInfo, q)
+		checkErr(err)
+	}
+
+	getAllQuestionsInfo.QuestionsInfo = questionsInfo
+	t, _ := template.ParseFiles("./views/programmingtest.html")
+	t.Execute(w, getAllQuestionsInfo)
+}
+
+func allChallengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
+	getAllQuestionsInfo := getAllQuestionsInfo{}
+	var buffer bytes.Buffer
 	buffer.WriteString("select id, description, deleted from challenges order by id")
 	rows3, _ := db.Query(buffer.String())
 
@@ -208,7 +253,7 @@ func challengesHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 		"foo": {"Challenge"},
 		}
 
-		m["foo"].challenge = string(decodedChallenge)
+		m["foo"].challenge = string(decodedChallenge)[1:150]
 
 		q.Description = m["foo"].challenge
 		//======================================================
@@ -279,10 +324,10 @@ type GeneralInfo struct {
 
 // display candidates information
 func candidateHandler(c web.C, w http.ResponseWriter, r *http.Request) {
-	var query = "SELECT c.id,c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts)"
+	var query = "SELECT c.id, c.name, c.email, c.degree, c.college, c.yearOfCompletion, c.modified, max(c1.attempts)"
 		query += " FROM candidates c JOIN sessions s ON c.id = s.candidateid"
 		query += " JOIN challenge_answers c1 ON s.id = c1.sessionid"
-		query += " where s.status=0"
+		query += " where s.status = 0"
 		query += " group by c.id"
 		query += "  order by c.id asc "
 
@@ -368,10 +413,18 @@ func personalInformationHandler(c web.C, w http.ResponseWriter, r *http.Request)
 
 type GetQuestions struct {
 	Questions string
-	Id string
 	Ans  string
+	Created time.Time
+	DateTimeOnly string
+}
+type GeneralDetails struct{
+	Id string
 	QuestionAttempted string
 	ChallengeAttempts string
+}
+type AllInfo struct{
+	GetQuestions []GetQuestions
+	GeneralDetails []GeneralDetails
 }
 
 //will display questions and answer given by candidates..
@@ -379,26 +432,44 @@ func questionDetailsHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	QuestionsAttended := r.FormValue("queAttempt")
 	ChallengeAttempts := r.FormValue("challengeAttmpt")
 
-	var query = "SELECT questions.description,questions_answers.answer"
+	var query = "SELECT questions.description, questions_answers.answer, questions_answers.Created"
 		query += " FROM questions"
 		query += " INNER JOIN questions_answers"
-		query += " ON questions.id=questions_answers.questionsid"
+		query += " ON questions.id = questions_answers.questionsid"
 		query += " where candidateid = "+ Id.Id +""
 		query += " ORDER BY questions.sequence"
 
 	rows, _ := db.Query(query)
 	questionsInfo := []GetQuestions{}
 	qinfo := GetQuestions{}
+	GeneralInfo := []GeneralDetails{}
+	g := GeneralDetails{}
+
 	for rows.Next() {
-		err := rows.Scan(&qinfo.Questions, &qinfo.Ans)
-		qinfo.QuestionAttempted = QuestionsAttended
-		qinfo.ChallengeAttempts = ChallengeAttempts
-		qinfo.Id = Id.Id
+		err := rows.Scan(&qinfo.Questions, &qinfo.Ans, &qinfo.Created)
+
+		//extract only date - time from timestamp========
+		str :=&qinfo.Created
+		str1 := str.String()
+		s := strings.Split(str1,".")
+		qinfo.DateTimeOnly = s[0]
+		//================================
+
 		questionsInfo = append(questionsInfo, qinfo)
 		checkErr(err)
 	}
+	g.QuestionAttempted = QuestionsAttended
+	g.ChallengeAttempts = ChallengeAttempts
+	g.Id = Id.Id
+
+	GeneralInfo = append(GeneralInfo, g)
+
+	Details := AllInfo{}
+	Details.GetQuestions = questionsInfo
+	Details.GeneralDetails = GeneralInfo
+
 	t, _ := template.ParseFiles("./views/questionDetails.html")
-	t.Execute(w, questionsInfo)
+	t.Execute(w, Details)
 }
 
 type GetChallenge struct {
@@ -408,6 +479,11 @@ type GetChallenge struct {
 	Id string
 }
 
+type LattestAnswer struct{
+ 	Answer string
+ 	Lang string
+ }
+
 type GetAnswers struct {
 	Answer string
 	Attempt string
@@ -416,14 +492,16 @@ type GetAnswers struct {
 type AllDetail struct {
 	GetChallenge []GetChallenge
 	GetAnswers []GetAnswers
+	LattestAnswer []LattestAnswer
+
 }
 //will display answer of challenge...
 func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 	QuestionsAttended := r.FormValue("queAttempt")
 	ChallengeAttempts := r.FormValue("challengeAttmpt")
 
-	stmt1, _ := db.Prepare("select description from challenges where id=(select challengeid from sessions where candidateid= ($1))")
-	rows1, _ := stmt1.Query(Id.Id)
+	stmt1, _ := db.Prepare("select description from challenges where id = (select challengeid from sessions where candidateid=($1) AND id =(select MAX(id) from sessions where status = 0 AND candidateid =($2)))")
+	rows1, _ := stmt1.Query(Id.Id, Id.Id)
 	challenge := []GetChallenge{}
 	q := GetChallenge{}
 	var encodedChallenge string
@@ -431,7 +509,6 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 		err := rows1.Scan(&encodedChallenge)
 		checkErr(err)
 	}
-
 	//Decode the encrypted challenge from database...
 	decodedChallenge, err := base64.StdEncoding.DecodeString(encodedChallenge)
 	if err != nil {
@@ -453,23 +530,29 @@ func challengeDetailsHandlers(c web.C, w http.ResponseWriter, r *http.Request) {
 	q.Id = Id.Id
 	challenge = append(challenge, q)
 
-	stmt2, _ := db.Prepare("select answer,attempts from challenge_answers where sessionid = (select id from sessions where candidateid=($1)) order by attempts")
+	stmt2, _ := db.Prepare("select answer, attempts, language from challenge_answers where sessionid = (select max(id) from sessions where candidateid=($1) AND status = 0) order by attempts")
 	rows2, _ := stmt2.Query(Id.Id)
 	answer := []GetAnswers{}
+
 	A := GetAnswers{}
+	B := LattestAnswer{}
+	BB := []LattestAnswer{}
+
 	for rows2.Next() {
-		err := rows2.Scan(&A.Answer,&A.Attempt)
+		err := rows2.Scan(&B.Answer, &A.Attempt, &B.Lang)
 		answer = append(answer, A)
 		checkErr(err)
 	}
+	BB = append(BB, B)
 	allDetails := AllDetail{}
 	allDetails.GetChallenge = challenge
 	allDetails.GetAnswers = answer
-
+	allDetails.LattestAnswer = BB
 
 	t, _ := template.ParseFiles("./views/challengeDetails.html")
 	t.Execute(w, allDetails)
 }
+
 type ChallengeCases struct{
 	Id int
 	Input string
@@ -512,7 +595,7 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 		m["foo"].challenge = string(decodedChallenge)
 		Challenge.Challenge = m["foo"].challenge
 
-		stmt1, _ := db.Prepare("select id, input, output, defaultcase from challenge_cases where challengeid = ($1)")
+		stmt1, _ := db.Prepare("select id, input, output, defaultcase from challenge_cases where challengeid = ($1) order by id")
 		rows1, _ := stmt1.Query(challengeId)
 
 		challengeCases := []ChallengeCases{}
@@ -529,7 +612,6 @@ func addTestCase(c web.C, w http.ResponseWriter, r *http.Request) {
 
 			challengeCases = append(challengeCases, q)
 		}
-		fmt.Println(challengeCases)
 		allDetails := AllDetails{}
 		allDetails.ChallengeCases = challengeCases
 		allDetails.ChallengeDesc = Challenge
@@ -569,7 +651,6 @@ func getTestCaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	//==========================
 	w.Header().Set("Content-Type", "application/json")
 	w.Write([]byte(b))//set response...
-		// allDetails.ChallengeDesc = challenge
 }
 
 // edit test case .
@@ -583,7 +664,7 @@ func editTestCaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r,  "addTestCases?qid=" + challengeId , 301)
 }
 
-
+//Searching will perform on candidates information...
 func searchHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	//data comes from admin side...
 	name := r.FormValue("name")
@@ -707,7 +788,7 @@ func challengeAttemptHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	attemptDetails := ChallengeAttemptsDetails{}
 
-	stmt,_ :=db.Prepare("SELECT answer, language FROM challenge_answers WHERE attempts=($1) AND sessionid = (select id from sessions where candidateid=($2) AND status= 0 )")
+	stmt,_ :=db.Prepare("SELECT answer, language FROM challenge_answers WHERE attempts=($1) AND sessionid = (select MAX(id) from sessions where candidateid=($2) AND status= 0 )")
 	rows, _ := stmt.Query(attemptNo, candidateId)
 
 	for rows.Next() {
@@ -753,7 +834,7 @@ func DefaultTestcaseHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 			checkErr(err)
 	}
 	challengeCases = append(challengeCases, q)
-	fmt.Println(challengeCases)
+
 	//========to convert response to JSON ==========
 	b, err := json.Marshal(challengeCases)
 	if err != nil {
@@ -773,7 +854,7 @@ type getChallengeDescription struct {
 // get challenge information using challenge id.
 func getChallengeInfoHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	challengeId := r.FormValue("challengeId")
-	fmt.Println(challengeId)
+
 	stmt,_ := db.Prepare("select description from challenges where id = ($1)")
 	rows, _ := stmt.Query(challengeId)
 	challenge := getChallengeDescription{}
@@ -795,7 +876,6 @@ func getChallengeInfoHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 
 	m["foo"].challenge = string(decodedChallenge)
 	challenge.Description = m["foo"].challenge;
-	fmt.Println(challenge)
 	b, err := json.Marshal(challenge)
 	if err != nil {
 			fmt.Printf("Error: %s", err)
@@ -815,7 +895,7 @@ func main() {
 	goji.Handle("/", candidateHandler)
 	goji.Handle("/search", searchHandler)
 	goji.Handle("/candidates", candidateHandler)
-	goji.Handle("/activeQuestions", ActiveQuestionsHandler)
+	goji.Handle("/allQuestions", allQuestionsHandler)
 	goji.Handle("/questions", questionsHandler)
 	goji.Handle("/addQuestions", addQuestionsHandler)
 	goji.Handle("/editquestion", editQuesionHandler)
@@ -828,6 +908,7 @@ func main() {
 	goji.Handle("/testcase", testcaseHandler)
 	goji.Handle("/addTestCases", addTestCase)
 	goji.Handle("/programmingtest", challengesHandler)
+	goji.Handle("/allChallenges", allChallengesHandler)
 	goji.Handle("/editchallenge", editChallengeHandler)
 	goji.Handle("/newChallenge", newChallengeHandler)
 	goji.Handle("/challengeAttempt", challengeAttemptHandler)

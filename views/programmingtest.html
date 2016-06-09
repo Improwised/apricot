@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
-    <link rel="stylesheet" type="text/css" href="../assets/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-select.min.css">
 
     <!-- /Stylesheets -->
@@ -70,7 +70,7 @@
           <div class="btn-group pull-right">
             <select name="menu" class="selectpicker pull-right" id="selection">
               <option value="./programmingtest">Active</option>
-              <option value="./programmingtest">All</option>
+              <option value="./allChallenges">All</option>
             </select>
           </div>
 
@@ -245,7 +245,7 @@
     <script type="text/javascript" src="../assets/js/bootstrap-select.min.js"></script>
     <script type="text/javascript" src="https://cdn.rawgit.com/showdownjs/showdown/1.0.2/dist/showdown.min.js"></script>
     <script type="text/javascript">
-      if (window.location.href.split('/')[3] === 'allQuestions') {
+      if (window.location.href.split('/')[3] === 'allChallenges') {
         $('#selection option:contains("All")').prop('selected', true);
       } else {
         $('#selection option:contains("Active")').prop('selected', true);

@@ -16,12 +16,13 @@
     <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
     <link rel="stylesheet" type="text/css" href="../assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="../assets/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/jquery.dataTables.min.css">
 
     <!-- /Stylesheets -->
 
   </head>
 
-  <body>
+  <body onload="appendYears();">
     <div id="wrapper">
 
       <!-- Navigation -->
@@ -97,7 +98,7 @@
               <div class="card card-default">
                 <div class="card-block">
                   <div class="table-responsive">
-                    <table id="myTable" class="sortable table table-bordered table-hover table-striped paginated">
+                    <table id="myTable">
                       <thead>
                         <tr>
                           <th style="width:2px;"><a href="#">Id</a></th>
@@ -117,7 +118,7 @@
                       <tbody>
                         {{with .}}
                         {{range .}}
-                        <tr>
+                        <tr id="rows">
                           <td>{{.Id}}</td>
                           <td><a href="/personalInformation?id={{.Id}}&queAttempt={{.QuestionsAttended}}&challengeAttmpt={{.ChallengeAttempts}}">{{.Name}}</a></td>
                           <td>{{.Email}}</td>
@@ -155,8 +156,12 @@
 
     <!-- Scripting -->
 
-    <script type="text/javascript" src="../assets/js/index.js"></script>
+
     <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
+
+     <script type="text/javascript" src="../assets/js/jquery.dataTables.min.js"></script>
+
+      <script type="text/javascript" src="../assets/js/index.js"></script>
     <script type="text/javascript" src="../assets/js/sorting.js"></script>
     <script type="text/javascript" src="../assets/js/select2.min.js"></script>
 

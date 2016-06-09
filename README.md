@@ -27,6 +27,10 @@ $ create database iims
 ```
 $ go run migration.go
 ```
+* Change Database User
+```
+$ Change User in Config File
+```
 
 ## Client Side
 
