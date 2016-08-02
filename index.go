@@ -72,7 +72,7 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	services.CheckErr(err)
 
 	//get user detail
- 	allDetails.GeneralInfo = services.PersonalInfo(candidateid)
+	allDetails.GeneralInfo = services.PersonalInfo(candidateid)
 	// get all questions
 	allDetails.GetQuestions, _ = services.QuestionsAnswers(candidateid)
 
