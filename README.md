@@ -29,7 +29,11 @@ $ go run migration.go
 ```
 * Change Database User
 ```
-$ Change User in Config File
+$ Change User in dbConfig/test-files/Config File
+```
+* Set Up For Email
+```
+$ Add Email Id And Password in config/configuration file
 ```
 
 ## Client Side
@@ -65,6 +69,11 @@ TODO: Contributing guidelines and code styles
 ## Testing
 
 TODO: How to run tests
+
+Run following command from apricot
+```
+GO_ENV2=testing go test
+```
 * Admin Side
 ```
 	1. Add Questions.
