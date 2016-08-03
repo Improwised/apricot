@@ -66,7 +66,6 @@ func informationHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 	// allDetails.RemainTime = services.CalculateDayHrMin(remainTime)
 	allDetails.RemainTime = int(remainTime.Seconds())
 
-
 	var candidateid int
 	err := db.QueryRow("select candidateId from sessions where hash = ($1)", hash).Scan(&candidateid)
 	services.CheckErr(err)
@@ -306,7 +305,6 @@ func thankYouHandler(c web.C, w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
 	goji.Handle("/", indexHandler)
 
 	goji.Get("/confirmation", confirmationPage)
