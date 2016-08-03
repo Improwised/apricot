@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Improwised Admin</title>
+    <!-- Stylesheets -->
+    <link rel="icon" href="../assets/img/tabLogo.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/select2.min.css">
+    <link rel="stylesheet" type="text/css" href="../assets/css/jquery.dataTables.min.css">
+    <!-- /Stylesheets -->
+  </head>
+  <body onload=" datatable(); appendYears(); ">
+    <div id="wrapper">
+      <!-- Navigation -->
+      <nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <a class="navbar-brand" href="/candidates">Improwised</a>
+        </div>
+        <!-- /.Brand and toggle get grouped for better mobile display -->
+        <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+        <div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
+          <ul class="nav navbar-nav side-nav list-group">
+            <li class="list-group-item">
+              <a href="#"><i class="fa fa-fw fa-bar-chart-o"></i> Candidates</a>
+              <a href="/questions"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
+              <a href="challenges"><i class="fa fa-fw fa-bar-chart-o"></i> Programming Challenges</a>
+            </li>
+          </ul>
+        </div>
+        <!-- /.Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+      </nav>
+      <!-- /.Navigation -->
+      <div id="page-wrapper">
+        <div class="container-fluid">
+          <!-- Page Heading -->
+          <h1 class="page-header">
+            Candidates
+          </h1>
+          <!-- /Pahe Heading -->
+          <!-- Search Menu -->
+          <div class="form-group">
+            <div class="col-sm-2" >
+              <label class="control-label" style="width: 900px; height: 30px; text-align: left; color: #8585ad;">Search By :  Year Of Completion  </label>
+              <select name="select2" id="year" onchange="searchCandidates();" class="select2" style="width: 200px;">
+                <option value="All">All</option>
+              </select>
+            </div>
+            <div class="col-sm-2">
+              <label class="control-label" style="width: 900px; height: 30px; text-align: left; color: #8585ad;">Name/Email  </label>
+              <input type="text" class="form-control" name="search" id="name" style="width: 200px; height: 30px;" value="" onkeyup="searchCandidates();" placeholder="ex. xyz/xyz@gmail.com" data-toggle="tooltip" data-placement="top" title="Filter Table Data by Name/Email">
+            </div>
+            <div class="col-sm-2">
+              <label class="control-label" style="width: 900px; height: 30px; text-align: left; color: #8585ad;">Degree  </label>
+              <input type="text" class="form-control" name="degree" id="degree" style="width: 200px; height: 30px;" value="" onkeyup="searchCandidates();" placeholder="ex. B.Tech" data-toggle="tooltip" data-placement="top" title="Filter Table Data By Degree">
+            </div>
+            <div class="col-sm-1">
+              <label class="control-label" style="width: 900px; height: 30px; text-align: left; color: #8585ad;">College </label>
+              <input type="text" class="form-control" name="college" id="college" style="width: 200px; height: 30px;" value="" onkeyup="searchCandidates();" placeholder="ex. xyz Collage" data-toggle="tooltip" data-placement="top" title="Filter Table Data By Collage Name">
+            </div>
+          </div>
+          <br><br>
+          <!-- /Search Menu -->
+          <!-- /.row -->
+          <div class="row">
+            <div class="col-xl-4 col-lg-12">
+              <div class="card card-default">
+                <div class="card-block">
+                  <div class="table-responsive">
+                    <table id="myTable">
+                      <thead>
+                        <tr>
+                          <th style="width:2px;"><a href="#">Id</a></th>
+                          <th style="width:100px;"><a href="#">Name</a></th>
+                          <th style="width:100px;"><a href="#">Email</a></th>
+                          <th style="width:2px;"><a href="#">Degree</a></th>
+                          <th style="width:2px;"><a href="#">College</a></th>
+                          <th style="width:2px;"><a href="#">Year Of Completion</a></th>
+                          <th style="width:2px;"><a href="#">No Of Questions Attempted</a></th>
+                          <th style="width:2px;"><a href="#">No. of attempts for chellange</a></th>
+                          <th style="width:2px;"><a href="#">Modified</a></th>
+                        </tr>
+                      </thead>
+                      <!-- Fetch data and show in table -->
+                      <tbody>
+                        {{with .}}
+                        {{range .}}
+                        <tr id="rows">
+                          <td >{{.Id}}</td>
+                          <td ><a href="/candidate/personalInformation?id={{.Id}}">{{.Name}}</a></td>
+                          <td>{{.Email}}</td>
+                          <td>{{.Degree}}</td>
+                          <td>{{.College}}</td>
+                          <td>{{.YearOfCompletion}}</td>
+                          <td>{{.QuestionsAttended}}</td>
+                          <td>{{.ChallengeAttempts}}</td>
+                          <td>{{.DateOnly}}</td>
+                        </tr>
+                        {{end}}
+                        {{end}}
+                      </tbody>
+                      <!-- /.Fetch data and show in table -->
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+      </div>
+      <!-- /#page-wrapper -->
+    </div>
+    <!-- Scripting -->
+    <script type="text/javascript" src="../assets/js/jquery.min.js"></script>
+    <script type="text/javascript" src="../assets/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="../assets/js/admin.js"></script>
+    <script type="text/javascript" src="../assets/js/select2.min.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $(".select2").select2(); ({
+          placeholder: "Select"
+        });
+      });
+    </script>
+    <!-- /Scripting -->
+  </body>
+</html>

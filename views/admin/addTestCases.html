@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<title>Improwised Admin</title>
+		<!-- Stylesheets -->
+		<link rel="icon" href="../assets/img/tabLogo.ico" type="image/x-icon">
+		<link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="../assets/css/sb-admin.css">
+		<link rel="stylesheet" type="text/css" href="../assets/css/morris.css">
+		<link rel="stylesheet" type="text/css" href="../assets/css/font-awesome.min.css">
+		<!-- /Stylesheets -->
+	</head>
+	<body onload="markdownEditor();">
+		<div id="wrapper">
+			<!-- Navigation -->
+			<nav class="navbar navbar-dark bg-inverse navbar-fixed-top">
+				<!-- Brand and toggle get grouped for better mobile display -->
+				<div class="navbar-header">
+					<a class="navbar-brand" href="/candidates">Improwised</a>
+				</div>
+				<!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+				<div class="collapse navbar-collapse navbar-toggleable-sm navbar-ex1-collapse">
+					<ul class="nav navbar-nav side-nav list-group">
+						<li class="list-group-item">
+							<a href="/candidates"><i class="fa fa-fw fa-bar-chart-o"></i> Candidates</a>
+							<a href="/questions"><i class="fa fa-fw fa-bar-chart-o"></i> Questions</a>
+							<a href="/challenges"><i class="fa fa-fw fa-bar-chart-o"></i> Programming Challenges</a>
+						</li>
+					</ul>
+				</div>
+			</nav>
+			<!-- /Navigation -->
+			<div id="page-wrapper">
+				<div class="container-fluid">
+					<!-- Page Heading -->
+					<h1 class="page-header">
+						Add Test Cases
+					</h1>
+					<!-- /Page Heading -->
+					<div class="bs-example hidden" id="sucess">
+						<div class="alert alert-success fade in">
+							<a href="#" class="close" data-dismiss="alert">&times;</a>
+							<strong>Success!</strong> Testcase has been Deleted successfully.
+						</div>
+					</div>
+					<div class="bs-example hidden" id = "error">
+						<div class="alert alert-danger fade in">
+							<a href="#" class="close" data-dismiss="alert">&times;</a>
+							<strong>Error!</strong> You Can Not Delete Default Test Case !!.
+						</div>
+					</div>
+					<!-- Edit test case Modal -->
+					<div class="modal fade" id="editTestCasesModal" role="dialog">
+						<div class="modal-dialog">
+							<div class="modal-dialog modal-lg">
+								<!-- Modal content-->
+								<div class="modal-content">
+									<div class="modal-header">
+										<button type="button" class="close" data-dismiss="modal">&times;</button>
+										<h4 class="modal-title">Edit Test Cases</h4>
+									</div>
+									<div class="modal-body">
+										<form class="form-horizontal" role="form" method="POST" action="./editTestCase">
+											<input type="hidden" name="challengeId" id="challengeId">
+											<input type="hidden" name="testCaseId" id="testCaseId">
+											<div class="form-group">
+												<label class="control-label col-sm-2" for="description">Input:</label>
+												<div class="col-sm-10">
+													<textarea class="form-control col-sm-1" name="input" id="inputCase" rows="3" cols="20"  placeholder="Input for Challenge" style="width: 50%"></textarea>
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="control-label col-sm-2" for="sequence">Output:</label>
+												<div class="col-sm-10">
+													<textarea class="form-control col-sm-1" name="output" id="outputCase" rows="3" cols="20"  placeholder="Input for Challenge" style="width: 50%"></textarea>
+												</div>
+											</div>
+											<div class="form-group">
+												<div class="col-sm-offset-4 col-sm-10">
+													<input type="submit" class="btn btn-primary" name = "submit" value="Save">
+												</div>
+											</div>
+										</form>
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Modal for delete test case-->
+					<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+						<div class="modal-dialog" role="document">
+							<div class="modal-content">
+								<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="myModalLabel">Delete Test Case ..</h4>
+								</div>
+								<div class="modal-body">
+									Are you sure to want to delete this testcase permenently ??
+								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-danger" name = "deleteModalId" onclick="deleteTestCase(this.id)" >Delete</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!--delete testcase model.. -->
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-xl-4 col-lg-12">
+							<div class="card card-default">
+								<div class="card-block">
+									<form class="form-horizontal" role="form" method="POST" action="addTestCases">
+										<fieldset>
+											<legend>Challenge:</legend>
+											<div class="form-group col-sm-12">
+												<textarea id="pad" style="display: none;">{{with.ChallengeDesc}} {{.Challenge}} {{end}}</textarea>
+												<div id="markdown" style="border: 0px; width: 100%; height: auto"></div>
+											</div>
+											<div class="form-group">
+												<label class="control-label col-sm-1" for="description">Input:</label>
+												<div>
+													<textarea class="form-control col-sm-1" name="input" id="input" rows="3" cols="20" value="" placeholder="Input for Challenge" style="width: 30%"></textarea>
+												</div>
+												<label class="control-label col-sm-1" for="description">Output:</label>
+												<div>
+													<textarea class="form-control col-sm-5" name="output" id="output" rows="3" cols="20" value="" placeholder="Output for Challenge" style="width: 30%"></textarea>
+												</div>
+											</div>
+											<div class="form-group">
+												<div class="col-sm-offset-5">
+													<input type="submit" class="btn btn-primary" name = "submit" value = "ADD"  data-toggle="tooltip" data-placement="top" title="Click To Add New TestCase">
+												</div>
+											</div>
+										</fieldset>
+									</form>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /.row -->
+					<!-- /.row -->
+					<div class="row">
+						<div class="col-xl-4 col-lg-12">
+							<div class="card card-default">
+								<div class="card-block">
+									<div class="table-responsive">
+										<table id="testCases" class="table table-bordered table-hover table-striped text-center multilineTestcases" >
+											<thead>
+												<tr>
+													<th width="2%" class="text-center">ID</th>
+													<th width="45%" class="text-center">INPUT</th>
+													<th width="45%" class="text-center">OUTPUT</th>
+													<th width="2%" class="text-center">DEFAULT</th>
+													<th width="2%" colspan="3"class="text-center">ACTION</th>
+												</tr>
+											</thead>
+											{{  with. }}
+											{{  range.ChallengeCases }}
+											<tr id={{.Id}}>
+												<td>{{.Id}}</td>
+												<td>{{.Input}}</td>
+												<td>{{.Output}}</td>
+												<td>{{if eq .Flag 1}}<label class="control-label col-sm-2 defaultStatus" style="text-align: center;" id = "default{{.Id}}">No</label>
+												{{else}}<label class="control-label col-sm-2 defaultStatus" style="text-align: center;" id = "default{{.Id}}">Yes</label>
+												</td>
+												 {{end}}
+												<td><button type="button" class="btn btn-warning btn-sm" id="{{.Id}}" data-target="#editTestCasesModal" onclick="getTestCase(this.id)" data-toggle="tooltip" data-placement="top" title="CLick To Edit TestCase">Edit</button></td>
+												<td>{{if eq .Flag 0}}<button type="button" class="btn btn-success btn-sm defaultButton" onclick="setDefaultTestcase(this, this.id)" id = "{{.Id}}" style="cursor: pointer" data-toggle="tooltip" data-placement="top" title="Default TestCase" >Default</button>{{else}}<button type="button" class="btn btn-default btn-sm defaultButton" onclick="setDefaultTestcase(this, this.id)" id = "{{.Id}}" style="cursor: pointer" data-toggle="tooltip" data-placement="top" title="Click To Set TestCase As Default TestCase">Default</button></td>
+												{{end}}
+												<td><button type="submit" class="btn btn-danger btn-sm" title="Click To Delete TestCase Permently" data-toggle="modal" data-target="#myModal" id="{{.Id}}" onclick = "setModalId(this.id)">
+												Delete
+												</button>
+												</td>
+											</tr>
+											{{ end }}
+											{{ end }}
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- /.row -->
+				</div>
+				<!-- /.container-fluid -->
+			</div>
+			<!-- /#page-wrapper -->
+		</div>
+		<!-- Scripting -->
+		<script type="text/javascript" src="../assets/js/admin.js"></script>
+		<script type="text/javascript" src="../assets/js/jquery.min.js"></script>
+		<script type="text/javascript" src="../assets/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="../assets/js/showdownjs/showdown/dist/showdown.min.js"></script>
+		<!-- /Scripting -->
+	</body>
+</html>
