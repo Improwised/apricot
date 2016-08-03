@@ -1,6 +1,33 @@
-hash: 0965a16d1d050dcdf45a42587266f3de6ff936f5849b6d4ac0ae865bc50ab707
-updated: 2016-03-08T17:24:37.939302016+05:30
+hash: 0c5a99d8cb2acf9faaaab42f323b5f42766c703e9bf172cd9dde9e23d0ccf780
+updated: 2016-07-15T11:01:51.896652179+05:30
 imports:
+- name: github.com/codegangsta/negroni
+  version: c7477ad8e330bef55bf1ebe300cf8aa67c492d1b
+- name: github.com/DavidHuie/gomigrate
+  version: eb6ae245bc66c1f5b0cef2e4135774794d4833d7
+- name: github.com/gocql/gocql
+  version: 51009831ae7a79fd8f1b160d7359916a7a044afa
+- name: github.com/guregu/null
+  version: 41961cea0328defc5f95c1c473f89ebf0d1813f6
+- name: github.com/lib/pq
+  version: 165a3529e799da61ab10faed1fabff3662d6193f
+  subpackages:
+  - oid
+- name: github.com/Masterminds/cookoo
+  version: 78aa11ce75e257c51be7ea945edb84cf19c4a6de
 - name: github.com/zenazn/goji
   version: e9a3f0275121c2439e2bd4b5dc6a9eb3fbe88451
-devImports: []
+  subpackages:
+  - web
+  - bind
+  - graceful
+  - web/middleware
+  - graceful/listener
+  - web/mutil
+- name: gopkg.in/alexcesaro/quotedprintable.v3
+  version: 2caba252f4dc53eaf6b553000885530023f54623
+- name: gopkg.in/gomail.v2
+  version: 81ebce5c23dfd25c6c67194b37d3dd3f338c98b1
+- name: gopkg.in/yaml.v2
+  version: e4d366fc3c7938e2958e662b4258c7a89e1f0e3e
+testImports: []
