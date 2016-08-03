@@ -7,7 +7,7 @@ import (
 		"testing"
 		"database/sql"
 
-		"github.com/improwised/apricot/services"
+		."github.com/improwised/apricot/services"
 )
 
 var db *sql.DB = services.SetupDB()
@@ -125,5 +125,3 @@ func TestAttemptWiseSource(t *testing.T) {
 		t.Errorf("Test(AttemptWiseSource) Failed",expectedLanguage, actual[32:38])
 	}
 }
-
-

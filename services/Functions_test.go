@@ -71,14 +71,6 @@ func TestHashGenerator(t *testing.T){
 	}
 }
 
-// func TestCalculateDayHrMin(t *testing.T) {
-//   actual := services.CalculateDayHrMin(169)
-//   expected := 0
-//   if(actual.Days != expected){
-//     t.Errorf("Test(CalculateDayHrMin) failed, expected day: '%d', got:  '%d'", expected, actual.Days)
-//   }
-// }
-
 func TestSaveChallengeAnswer(t *testing.T){
 	var hash string
 	err := db.QueryRow("select hash from sessions where candidateid = 1").Scan(&hash)

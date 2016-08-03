@@ -209,6 +209,3 @@ func TestPersonalInfo(t *testing.T) {
 		t.Errorf("Test(PersonalInfo) failed, expected Year Of Completion : 2016 Got:'%s'", actual.YearOfCompletion)
 	}
 }
-
-
-
