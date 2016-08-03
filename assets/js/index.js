@@ -20,41 +20,51 @@ function checkform(pform1){
 
 //data retrive from html form
 function autoSave(data,id) {
-
+	var Data = document.getElementById(id).value;
 	var str = "";
 
 	str += data ;
 	url = window.location.search.substring(1);
 	var hash;
 	var myJson = {};
-
 	var hashes = url.slice(url.indexOf('?') + 1).split('&');
 
 	for (var i = 0; i < hashes.length; i++) {
 		hash = hashes[i].split('=');
 		myJson[hash[0]] = hash[1];
 	}
-	setTimeout(function() {
-		sendDataToServer(str,id, myJson[hash[0]]);
-	}, 100);
-}
+	var timer;
+	var x;
 
-function sendDataToServer(str,id, hash) {
-	if (str==""){
-		return;
-	}
-	if (window.XMLHttpRequest) {
-		xmlhttp=new XMLHttpRequest();
-	}
-	xmlhttp.open("GET","saveData?data="+ str + "&id="+ id + "&key=" + hash, true);
-	xmlhttp.send();
+	if (x) {
+		x.abort()
+	} // If there is an existing XHR, abort it.
+	setTimeout(function() { // assign timer a new timeout
+			// run ajax request and store in x variable (so we can cancel)
+		x = $.ajax({
+					url: "/saveData",
+					type: 'post',
+					contentType: "application/x-www-form-urlencoded",
+					data: {
+						data : Data,
+						id : id,
+						hash : myJson[hash[0]]
+					},
+					success: function (response) {
+
+					},
+					error: function (error) {
+						console.log(error);
+					}
+				});
+	}, 1000); // 1000ms delay, tweak for faster/slower
 }
 
 //giving success message after register email ...
 function confirmMsg() {
 	var x = location.search;
 	if(x !== "") {
-	document.getElementById("messageSent").innerHTML = "Thank you for your interest.Check your email id for further process.";
+		document.getElementById("messageSent").innerHTML = "Thank you for your interest.Check your email id for further process.";
 	}
 }
 
@@ -85,69 +95,21 @@ function getQid() {
 	document.getElementById("qId").value = myJson[hash[0]];
 }
 
-// var flag = 0;
-function deleteQuestion(qId, element) {
-	$.ajax({
-		url: "/deleteQuestion",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			qid : qId,
-		},
-
-		success: function (response) {
-			if (response == "yes") {
-				document.getElementById("button" + qId).innerHTML = "Show";
-				element.className = "btn btn-success";
-				document.getElementById("show" + qId).innerHTML = "No";
-			}
-			else if (response == "no") {
-				document.getElementById("button" + qId).innerHTML = "Hide";
-				element.className = "btn btn-danger";
-				document.getElementById("show" + qId).innerHTML = "Yes";
-			}
-		},
-
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-function deleteChallenge(qId, element) {
-	$.ajax({
-		url: "/deleteChallenge",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			qid : qId,
-		},
-
-		success: function (response) {
-			if (response == "yes") {
-				document.getElementById("button" + qId).innerHTML = "Show";
-				element.className = "btn btn-success";
-				document.getElementById("show" + qId).innerHTML = "No";
-			}
-			else if (response == "no") {
-				document.getElementById("button" + qId).innerHTML = "Hide";
-				element.className = "btn btn-danger";
-				document.getElementById("show" + qId).innerHTML = "Yes";
-			}
-		},
-
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
 function getHrResponse(id) {
+	var confirmation;
+	var $loading = $('#loading').hide();
+	//last confirmation before submit the solution ...
+	if(id == "submitCode"){
+		confirmation = confirm('Are You Sure To Submit The Sollution ..?');
+		if(confirmation == false){
+			return false;
+		}
+	}
 	var source = editor.getValue();
 	var language = $(".language").val();
 	var languageName = $('#languages :selected').text();
-
 	var acelang = aceLanguage(languageName);
+
 	url = window.location.search.substring(1);
 	var hash;
 	var myJson = {};
@@ -166,7 +128,6 @@ function getHrResponse(id) {
 	elem.style.fontWeight = "900"
 
 	$('#status').html(" ");
-
 	$('#status').html("Wait...");
 
 	$('#expecteOutput').html(" ");
@@ -174,71 +135,83 @@ function getHrResponse(id) {
 	$('#compilemessage').html(" ");
 	$('#input').html(" ");
 
-	$.ajax({
+	if(source !== ""){
+		$loading.show();
+		$.ajax({
+			url: "hrresponse",
+			type: 'post',
+			async: true,
+			crossDomain : true,
+			contentType: "application/x-www-form-urlencoded",
+			data: {
+				source : source,
+				hash : key,
+				id : id,
+				language : language,
+				aceLang : acelang
+			},
+			success: function (response) {
+				var elem = document.getElementById("compilemessage")
+				var elem2 = document.getElementById("status")
+				testcaseStatus = response[4]
+				elem2.style.backgroundColor = "#90EE90"
+				$('#status').html(" ");
 
-		url: "hrresponse",
-		type: 'post',
-		crossDomain : true,
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			source : source,
-			hash : key,
-			id : id,
-			language : language,
-			aceLang : acelang
-		},
-		success: function (response) {
-			var elem = document.getElementById("compilemessage")
-			var elem2 = document.getElementById("status")
-			testcaseStatus = response[4]
-			elem2.style.backgroundColor = "#90EE90"
-			$('#status').html(" ");
+				$('#input').html(response[0]);
+				$('#expecteOutput').html(response[1]);
 
-			$('#input').html(response[0]);
-			$('#expecteOutput').html(response[1]);
+				if(testcaseStatus == "0"){
+					elem2.style.color = "Red"
+					elem2.style.fontWeight = "900"
+					$('#status').html("Testcase-1 Failed...");
+				} else if(testcaseStatus == "1"){
+					elem2.style.color = "Green"
+					elem2.style.fontWeight = "900"
+					$('#status').html("Testcase-1 Passed...");
+				}
 
-			if(testcaseStatus == "0"){
+				if(response[2] == ""){
+					elem.style.color = "Red"
+					elem.style.fontWeight = "900"
+					$('#yourOutput').html("Error...");
+				} else {
+					$('#yourOutput').html(response[2]);
+				}
+
+				if(response[3] == ""){
+					elem.style.color = "Green"
+					elem.style.fontWeight = "900"
+					$('#compilemessage').html("Compiled Succesfully...");
+				} else {
+					if(testcaseStatus == "0")	elem.style.color = "Red"
+						else elem.style.color = "Blue"
+					$('#compilemessage').html(response[3]);
+				}
+				$loading.hide();
+				if(id == "submitCode" && confirmation == true){
+					window.location="http://localhost:8000/thankYouPage";
+				}
+			},
+			error: function (response) {
+				$loading.hide();
+				var elem2 = document.getElementById("status")
+				$('#status').html(" ");
+				elem2.style.backgroundColor = "#FCF5D8"
 				elem2.style.color = "Red"
 				elem2.style.fontWeight = "900"
-				$('#status').html("Testcase-1 Failed...");
-			} else if(testcaseStatus == "1"){
-				elem2.style.color = "Green"
-				elem2.style.fontWeight = "900"
-				$('#status').html("Testcase-1 Passed...");
-			}
-
-			if(response[2] == ""){
-				elem.style.color = "Red"
-				elem.style.fontWeight = "900"
-				$('#yourOutput').html("Error...");
-			} else {
-				$('#yourOutput').html(response[2]);
-			}
-
-			if(response[3] == ""){
-				elem.style.color = "Green"
-				elem.style.fontWeight = "900"
-				$('#compilemessage').html("Compiled Succesfully...");
-			} else {
-				elem.style.color = "Red"
-				$('#compilemessage').html(response[3]);
-			}
-			if(id == "submitCode"){
-				window.location="http://localhost:8000/thankYouPage";
-			}
-		},
-		error: function (response) {
-			var elem2 = document.getElementById("status")
-			$('#status').html(" ");
-			elem2.style.backgroundColor = "#FCF5D8"
-			elem2.style.color = "Red"
-			elem2.style.fontWeight = "900"
-			$('#status').html("Something went wrong..! Try again...");
-		},
-	});
+				$('#status').html("Something went wrong..! Try again...");
+			},
+		});
+	} else {
+		var elem2 = document.getElementById("status")
+		elem2.style.backgroundColor = "#FCF5D8"
+		$('#status').html(" ");
+		$('#status').html("Please Write Some Code ..!");
+	}
 }
 
 function getLanguages() {
+	$('#loading').hide();
 	var obj = {};
 	var i = 0;
 	var languages = [];
@@ -261,127 +234,46 @@ function getLanguages() {
 				i += 1;
 			}
 			//will markdown the challenge..
-				var converter = new showdown.Converter();
-				var pad = document.getElementById('pad');
-				var markdownArea = document.getElementById('markdown');
-
-				var convertTextAreaToMarkdown = function(){
-					var markdownText = pad.value;
-					html = converter.makeHtml(markdownText);
-					markdownArea.innerHTML = html;
-				};
-				pad.addEventListener('input', convertTextAreaToMarkdown);
-				convertTextAreaToMarkdown();
+				markdownEditor();
 			},
 		error: function (Error) {
-			console.log("Error");
+			console.log(Error);
 		},
 	});
-}
-
-function saveTaseCases(){
-	var input = document.getElementById("input").value
-	var output = document.getElementById("output").value
-	if (window.XMLHttpRequest) {
-		xmlhttp=new XMLHttpRequest();
-	}
-	xmlhttp.open("GET", "/testcase?&input=" + input + "& output=" + output + "");
-	xmlhttp.send();
 }
 
 //will convert hackerrank langugage to ace editor language for syntext highlight ...
 function aceLanguage(lang){
 	var aceLang;
 	if(lang === "C" ||lang === "Cpp" || lang === "Ruby" || lang === "Oracle" || lang === "Go" || lang === "Python3" || lang === "Visualbasic" || lang === "Smalltalk" || lang === "Java8" || lang === "Db2" ){
-			if(lang === "C" || lang === "Cpp")	aceLang = "c_cpp"
-			if(lang === "Oracle" ) aceLang = "sql"
-			if(lang === "Go" ) aceLang = "golang"
-			if(lang === "Ruby" ) aceLang = "html_ruby"
-			if(lang === "Python3" ) aceLang = "python"
-			if(lang === "Visualbasic" ) aceLang = "vbscript"
-			if(lang === "Smalltalk" ) aceLang = "smarty"
-			if(lang === "Java8" ) aceLang = "javascript"
-			if(lang === "Db2" ) aceLang = "sqlserver"
-		}
-		else {
-			 aceLang = lang.toLowerCase();
-		}
-		return aceLang;
+		if(lang === "C" || lang === "Cpp")	aceLang = "c_cpp"
+		if(lang === "Oracle" ) aceLang = "sql"
+		if(lang === "Go" ) aceLang = "golang"
+		if(lang === "Ruby" ) aceLang = "html_ruby"
+		if(lang === "Python3" ) aceLang = "python"
+		if(lang === "Visualbasic" ) aceLang = "vbscript"
+		if(lang === "Smalltalk" ) aceLang = "smarty"
+		if(lang === "Java8" ) aceLang = "javascript"
+		if(lang === "Db2" ) aceLang = "sqlserver"
+	}
+	else {
+		 aceLang = lang.toLowerCase();
+	}
+	return aceLang;
 }
 
 //will set behaviour of editor according to selected language...
-$(document).ready(function() {
-	$( ".language" ).change(function() {
+function onLangChange(){
+	var lang = $('#languages :selected').text();
+	//=======
+	aceLang = aceLanguage(lang);
+	///======
 
-		var lang = $('#languages :selected').text();
-		//=======
-		aceLang = aceLanguage(lang);
-		///======
+	var editor = ace.edit("editor");
+	editor.setTheme("ace/theme/monokai");
+	editor.getSession().setMode("ace/mode/"+ aceLang);
 
-				var editor = ace.edit("editor");
-				editor.setTheme("ace/theme/monokai");
-				editor.getSession().setMode("ace/mode/"+ aceLang);
-
-		document.getElementById('editor').style.fontSize='16px';
-
-	});
-});
-
-//Searching start....
-function searchCandidates(){
-	var name = document.getElementById('name').value;
-	var degree = document.getElementById('degree').value;
-	var college = document.getElementById('college').value;
-	var year = document.getElementById('year').value;
-
-	$.ajax({
-		url: "search",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			'year' : year,
-			'name' : name,
-			'degree' : degree,
-			'college' : college
-		},
-		success: function (response) {
-			$('#myTable ').children().remove();
-
-			var $rows = $("table tr");
-				var tr,tr2;
-				tr2 = $('<tr/>');
-				tr2.append("<th style='width:2px;'><a href='#'>Id</a></th>");
-				tr2.append("<th style='width:100px;'><a href='#'>Name</a></th>");
-				tr2.append("<th style='width:100px;'><a href='#'>Email</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>Degree</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>College</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>Year Of Completion</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>No Of Questions Attempted</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>No. of attempts for chellange</a></th>");
-				tr2.append("<th style='width:2px;'><a href='#'>Modified</a></th>");
-				$('#myTable').append(tr2);
-
-				for (var i = 0; i < response.length; i++) {
-					tr = $('<tr/>');
-					tr.append("<td>" + response[i].Id + "</td>");
-					tr.append("<td><a href=/personalInformation?id="+response[i].Id+"&queAttempt="+response[i].QuestionsAttended+"&challengeAttmpt="+response[i].ChallengeAttempts+">" + response[i].Name + "</a></td>");
-					tr.append("<td>" + response[i].Email + "</td>");
-					tr.append("<td>" + response[i].Degree + "</td>");
-					tr.append("<td>" + response[i].College + "</td>");
-					tr.append("<td>" + response[i].YearOfCompletion + "</td>");
-					tr.append("<td>" + response[i].QuestionsAttended + "</td>");
-					tr.append("<td>" + response[i].ChallengeAttempts + "</td>");
-					tr.append("<td>" + response[i].DateOnly + "</td>");
-
-						$('#myTable').append(tr);
-
-				}
-					$('#myTable').DataTable();
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
+	document.getElementById('editor').style.fontSize='16px';
 }
 
 function showDiv1() {
@@ -391,24 +283,6 @@ function showDiv1() {
 	else
 		document.getElementById('pad').style.display = "block";
 }
-
-//pagination and sorting ...
-$(document).ready(function(){
-		$('#myTable').DataTable();
-});
-
-// for appending years from 2010 to 2030 in year select box...
-(function() {
-		var elm = document.getElementById('year'),
-				df = document.createDocumentFragment();
-		for (var i = 2030; i >= 2010; i--) {
-				var option = document.createElement('option');
-				option.value = i;
-				option.appendChild(document.createTextNode(i));
-				df.appendChild(option);
-		}
-		elm.appendChild(df);
-}());
 
 //mark down text....
 function markdownEditor(){
@@ -420,11 +294,11 @@ function markdownEditor(){
 }
 
 function convertTextAreaToMarkdown(markdownText){
-		var converter = new showdown.Converter();
-		var markdownArea = document.getElementById('markdown');
+	var converter = new showdown.Converter();
+	var markdownArea = document.getElementById('markdown');
 
-		html = converter.makeHtml(markdownText);
-		markdownArea.innerHTML = html;
+	html = converter.makeHtml(markdownText);
+	markdownArea.innerHTML = html;
 }
 
 //ACE Editor with mode and theme ...
@@ -436,195 +310,32 @@ function aceEditor(language, source){
 	document.getElementById('editor').style.fontSize='16px';
 }
 
-//will return the source code of challenge according to challenge attempt..
-function challengeAttempts(event, attemptNo){
-	event.preventDefault();
-	url = window.location.href;
-	var hash;
-	var hashes = url.slice(url.indexOf('?') + 1).split('&');
-	hash = hashes[0].split('=');
-	candidateID = hash[1];
+//Display clock ...
+function display_ct() {
+	// Calculate the number of days left
+	var days = Math.floor(window.start / 86400);
+	// After deducting the days calculate the number of hours left
+	var hours = Math.floor((window.start - (days * 86400 ))/3600)
+	// After days and hours , how many minutes are left
+	var minutes = Math.floor((window.start - (days * 86400 ) - (hours * 3600 ))/60)
+	// Finally how many seconds left after removing days, hours and minutes.
+	var secs = Math.floor((window.start - (days * 86400 ) - (hours * 3600 ) - (minutes * 60)))
+	var x = " " + days + " Days " + hours + " Hours "  + minutes + " Minutes and "  + secs + " Secondes " + "";
+	document.getElementById('ct').innerHTML = x;
+	window.start = window.start- 1;
+	tt = display_clock(window.start);
+ }
 
-	$.ajax({
-		url: "challengeAttempt",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			candidateID : candidateID,
-			attemptNo : attemptNo
-		},
-		success: function (response) {
-			aceEditor(response.Language, response.Source);
-			$("#lang").html(response.Language);
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-//delete testcases for a challenge ...
-function deleteTestCase(Id){
-	var conformation = confirm('Are You Sure You Want Delete this Testcase ??');
-	if (conformation) {
-		url = window.location.href;
-		var hash;
-		var hashes = url.slice(url.indexOf('?') + 1).split('&');
-		hash = hashes[0].split('=');
-		challengeId = hash[1];
-
-		$.ajax({
-			url: "deleteTestCase",
-			type: 'post',
-			contentType: "application/x-www-form-urlencoded",
-			data: {
-				challengeId : challengeId,
-				testCaseId : Id
-			},
-			success: function (response) {
-				$('table#testCases tr#'+Id).remove();
-			},
-			error: function (error) {
-				console.log(error);
-			}
-		});
+function display_clock(start){
+	window.start = parseFloat(start);
+	var end = 0 // change this to stop the counter at a higher value
+	var refresh = 1000; // Refresh rate in milli seconds
+	if(window.start >= end ){
+		mytime = setTimeout('display_ct()',refresh)
 	}
-}
+	else {
+		alert("Time Over");
+		window.location="http://localhost:8000/thankYouPage";
 
-//set default test case for a challenge ...
-function setDefaultTestcase(element, Id){
-	url = window.location.href;
-	var hash;
-	var hashes = url.slice(url.indexOf('?') + 1).split('&');
-	hash = hashes[0].split('=');
-	challengeId = hash[1];
-
-	$.ajax({
-		url: "setDefaultTestcase",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			challengeId : challengeId,
-			testCaseId : Id
-		},
-		success: function (response) {
-			$(".defaultButton").addClass("btn btn-primary defaultButton");
-			element.className = "btn btn-default defaultButton";
-			$(".defaultStatus").html("No");
-			$("#default" + Id).html("Yes");
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-// get question information
-function getQuestionInfo(id) {
-	$.ajax({
-		url: "getQuestionInfo",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			id : id
-		},
-		success: function (response) {
-			$("#questionDescription").val(response[0].Description);
-			$("#questionSequence").val(response[0].Sequence);
-			$("#qId").val(response[0].Id);
-			$("#editQuestionModal").modal('show');
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-function getTestCase(id) {
-	url = window.location.search.substring(1);
-	var hash;
-	var myJson = {};
-	var hashes = url.slice(url.indexOf('?') + 1).split('&');
-
-	for (var i = 0; i < hashes.length; i++) {
-		hash = hashes[i].split('=');
-		myJson[hash[0]] = hash[1];
 	}
-	var challengeId = myJson[hash[0]];
-	$.ajax({
-		url: "getTestCase",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			testCaseId : id,
-			challengeId : challengeId
-		},
-		success: function (response) {
-			$("#inputCase").val(response[0].Input);
-			$("#outputCase").val(response[0].Output);
-			$("#challengeId").val(challengeId);
-			$("#testCaseId").val(id)
-			$("#editTestCasesModal").modal('show');
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-function getChallengeInfo(id) {
-	$.ajax({
-		url: "getChallengeInfo",
-		type: 'post',
-		contentType: "application/x-www-form-urlencoded",
-		data: {
-			challengeId : id
-		},
-		success: function (response) {
-			$("#pad1").val(response.Description);
-			$("#challengeId").val(id)
-			markDownActive();
-			$("#editChallengeModal").modal('show');
-		},
-		error: function (error) {
-			console.log(error);
-		}
-	});
-}
-
-function markDownActive() {
-	// Add Challenge Modal
-	var converter = new showdown.Converter();
-	var pad = document.getElementById('pad');
-	var markdownArea = document.getElementById('markdown');
-
-	var convertTextAreaToMarkdown = function(){
-
-		var markdownText = pad.value;
-		html = converter.makeHtml(markdownText);
-		markdownArea.innerHTML = html;
-	};
-	pad.addEventListener('input', convertTextAreaToMarkdown);
-
-	convertTextAreaToMarkdown();
-
-	// Edit Challenge modal
-	var converter1 = new showdown.Converter();
-	var pad1 = document.getElementById('pad1');
-	var markdownArea1 = document.getElementById('markdown1');
-
-	var convertTextAreaToMarkdown1 = function(){
-		var markdownText1 = pad1.value;
-		html1 = converter.makeHtml(markdownText1);
-		markdownArea1.innerHTML = html1;
-	};
-	pad1.addEventListener('input', convertTextAreaToMarkdown1);
-	convertTextAreaToMarkdown1();
-}
-
-//will call when body load to view candidates challenge and set mode and theme for ace editor for first time ...
-function callAceEditor(){
-	var lang = $('#lang').text();
-	var sourceCode = $('#editor').text();
-	aceEditor(lang,sourceCode);
 }

@@ -33,13 +33,13 @@ h3 {
   color: #888;
 }
 
- #editor {
+#editor {
 
-       letter-spacing: 0;
-        /*position: absolute;*/
-        width: 100%;
-        height: 600px;
-    }
+ /*letter-spacing: 0;*/
+  /*position: absolute;*/
+  width: 100%;
+  height: 600px;
+}
 
 #topBar {
   height: 10px;
@@ -118,8 +118,6 @@ h3 {
   background-color: #e4a693;
 }
 
-
-
 /*#contact {
   margin-bottom: 100px;
 }*/
@@ -149,7 +147,6 @@ h3 {
 .contactInfo .clear {
   margin: 5px 0;
 }
-
 
 #footer {
   height: 45px;
@@ -190,7 +187,6 @@ ol.design{
   -webkit-padding-start: 40px;
 }
 
-
 ol.design > li{
   position: relative;
   margin: 0 0 1.5em 1.5em;
@@ -219,8 +215,7 @@ ol.design > li::before{
   width: 1.85em;
 }
 
-
-label, input, button, select, textarea{
+/*label, input, button, select, textarea{
   font-family:'pt sans', "Lucida Grande",verdana,arial,helvetica,sans-serif;
 }
 
@@ -232,8 +227,7 @@ label, input, button, select, textarea{
   -moz-border-radius: 6px;
   -moz-box-shadow: 0 0 3px #ccc;
 
-}
-
+}*/
 
 .navbar .navbar-inner .container{
   padding-left: 20px;
@@ -256,7 +250,6 @@ h3{
 h2, h4, h5{
   color:#666;
 }
-
 
 a.underline{
   text-decoration:underline;
@@ -287,8 +280,6 @@ table {
 }
 input{
   font-size:17px;
-
-
 }
 table.index td.party h3 {
   color: black;
@@ -446,11 +437,11 @@ body,p,td {
   font-family: 'pt sans',arial,helvetica,sans-serif !important;
 }
 
-p,li,span {
+/*p,li,span {
   font-size: 14px;
   line-height: 1.6;
   color: #666;
-}
+}*/
 
 textarea{
   font-size:50px;
@@ -529,12 +520,6 @@ div.one {
 .clearfix {
   display: block;
 }
-/* close commented backslash hack */
-
-/* / Ace Editor */
-
-
-/*Markdown Editor */
 
 #pad{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -569,7 +554,6 @@ thead {
 
 div.pager span {
   position: relative;
-  /*float: left;*/
   padding: 6px 12px;
   margin-left: -1px;
   line-height: 1.42857143;
@@ -580,3 +564,35 @@ div.pager span {
   cursor: -webkit-grab;
 }
 /*pagination*/
+.norecords{
+  height: 72px;
+  vertical-align: middle;
+  font-size: 24px;
+  color: #bbb;
+}
+
+.hidden {
+  display:none;
+}
+
+.Completed{
+  color: rgb(51, 204, 51);
+  /*text-decoration: line-through;*/
+}
+
+.InProgress{
+  color: black;
+ /* font-size:20px;*/
+  font-weight: bold;
+
+
+  text-decoration: none;
+  padding-bottom: 4px;
+  white-space: nowrap;
+
+}
+
+.Remain{
+  color: black;
+}
+
