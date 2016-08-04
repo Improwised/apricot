@@ -1,0 +1,5 @@
+{
+  "database_file": "../dbconfig/test-files/database.yml",
+  "environment"  : "test"
+}
+

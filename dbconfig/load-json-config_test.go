@@ -1,0 +1,25 @@
+package dbconfig_test
+
+import (
+	"github.com/dovadi/dbconfig"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+)
+
+var _ = Describe("Reading a json config file", func() {
+
+	var jsonConf dbconfig.JSONConfig
+
+	BeforeEach(func() {
+		jsonConf = dbconfig.LoadJSONConfig("test-files/config.json")
+	})
+
+	It("should return the directory to the given rails app", func() {
+		Expect(jsonConf.Database_file).Should(Equal("/github.com/improwised/apricot/dbconfig/test-files/database.yml"))
+	})
+
+	It("should return the rails environment", func() {
+		Expect(jsonConf.Environment).Should(Equal("development"))
+	})
+
+})
