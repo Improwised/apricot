@@ -27,10 +27,6 @@ $ create database iims
 ```
 $ go run migration.go
 ```
-* Change Database User
-```
-$ Change User in dbConfig/test-files/Config File
-```
 * Set Up For Email
 ```
 $ Add Email Id And Password in config/configuration file
