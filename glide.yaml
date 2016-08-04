@@ -8,3 +8,4 @@ import:
 - package: github.com/guregu/null
 - package: github.com/gocql/gocql
 - package: gopkg.in/yaml.v2
+- package: github.com/fatih/structs
